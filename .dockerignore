@@ -1,0 +1,13 @@
+.git
+.gradle
+.idea
+.codex
+.agents
+.aws
+build
+buildentity-cleanupclasses
+tessdata
+.env
+.env.*
+!.env.example
+*.log
