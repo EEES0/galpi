@@ -8,4 +8,4 @@ The unused `Segment`, `Translation`, `TermExplanation`, and embeddable `Explanat
 
 Existing databases may still contain `segments`, `translations`, `term_explanations`, and `explanation_selections`, since Hibernate `ddl-auto=update` does not remove old tables. No database cleanup is performed by this change. Before retiring those tables, check for legacy rows and foreign keys; retained legacy rows referencing pages can prevent deletion of those pages.
 
-Run `render-erd.ps1` on Windows to regenerate `natjang-erd.png` from the documented model.
+Run `render-erd.ps1` on Windows to regenerate `galpi-erd.png` from the documented model.

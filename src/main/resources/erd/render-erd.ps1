@@ -34,7 +34,7 @@ function Edge($points, $left, $right) {
     $g.DrawString($left, $small, $ink, $ax, $ay)
     $g.DrawString($right, $small, $ink, $bx, $by)
 }
-$g.DrawString('NATJANG / ENTITY RELATIONSHIP DIAGRAM', $title, $ink, 70, 35)
+$g.DrawString('GALPI / ENTITY RELATIONSHIP DIAGRAM', $title, $ink, 70, 35)
 $g.DrawString('Current persistence model | 2 entities | 2026-11-19', $small, $ink, 74, 105)
 Box 70 180 'users / User' @('PK id : CHAR(36)', 'created_at : datetime', 'last_seen_at : datetime')
 Box 970 180 'pages / Page' @('PK id : CHAR(36)', 'FK user_id : CHAR(36)', 'title : varchar(200)', '? content : LONGTEXT [editor JSON]', '? summary : LONGTEXT', '? summary_updated_at : datetime', '? summary_language : varchar(20)', '? summary_source_hash : varchar(64)', 'version : bigint [@Version]', 'created_at : datetime', 'updated_at : datetime')
@@ -47,6 +47,6 @@ $g.DrawString('inputLanguage / userLanguage: editor language settings', $small, 
 $g.DrawString('PK = primary key    FK = foreign key    ? = nullable    1 / 0..* = one to zero or more', $small, $ink, 70, 1000)
 $g.DrawString('JSON arrays are not separate tables. Existing legacy tables are not dropped automatically.', $small, $ink, 70, 1040)
 $g.DrawString('Based on JPA mappings with Spring naming defaults; live database not inspected.', $small, $ink, 70, 1080)
-$bmp.Save((Join-Path $PSScriptRoot 'natjang-erd.png'), [System.Drawing.Imaging.ImageFormat]::Png)
+$bmp.Save((Join-Path $PSScriptRoot 'galpi-erd.png'), [System.Drawing.Imaging.ImageFormat]::Png)
 $g.Dispose(); $bmp.Dispose(); $pen.Dispose(); $font.Dispose(); $small.Dispose(); $heading.Dispose(); $title.Dispose()
 

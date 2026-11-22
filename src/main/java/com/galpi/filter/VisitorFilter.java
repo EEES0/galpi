@@ -12,12 +12,13 @@ import java.time.Duration;
 @Component
 public class VisitorFilter extends OncePerRequestFilter {
     public static final String USER_ID = "visitorUserId";
-    public static final String COOKIE_NAME = "natjang_visitor";
+    public static final String COOKIE_NAME = "galpi_visitor";
     private final VisitorService visitors;
     public VisitorFilter(VisitorService visitors) { this.visitors = visitors; }
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
-        return !request.getRequestURI().startsWith(request.getContextPath() + "/api/");
+        String path = request.getRequestURI().substring(request.getContextPath().length());
+        return "/api/ping".equals(path) || !path.startsWith("/api/");
     }
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,

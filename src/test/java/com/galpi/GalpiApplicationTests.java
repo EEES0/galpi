@@ -9,7 +9,7 @@ import org.springframework.boot.test.context.SpringBootTest;
         "spring.datasource.username=sa", "spring.datasource.password=",
         "spring.jpa.hibernate.ddl-auto=create-drop", "openai.api-key=test", "openai.model=test"
 })
-class NatjangApplicationTests {
+class GalpiApplicationTests {
 
 	@Test
 	void contextLoads() {

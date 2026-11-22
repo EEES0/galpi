@@ -51,6 +51,20 @@ class VisitorPagesIntegrationTest {
     }
 
     @Test
+    void pingDoesNotCreateVisitorOrSetCookie() throws Exception {
+        long count = users.count();
+        var ping = HttpRequest.newBuilder(URI.create("http://localhost:"
+                + environment.getProperty("local.server.port") + "/api/ping")).GET().build();
+        for (int i = 0; i < 2; i++) {
+            var response = client.send(ping, HttpResponse.BodyHandlers.ofString());
+            assertEquals(200, response.statusCode());
+            assertEquals("pong", response.body());
+            assertTrue(response.headers().allValues("set-cookie").isEmpty());
+        }
+        assertEquals(count, users.count());
+    }
+
+    @Test
     void visitorCanCreateSaveAndReloadOnlyTheirOwnPages() throws Exception {
         var first = request("GET", "", null, null);
         assertEquals(200, first.statusCode());
@@ -82,8 +96,8 @@ class VisitorPagesIntegrationTest {
         assertNotEquals(identity, stranger);
         assertEquals(404, request("GET", path, stranger, null).statusCode());
         assertEquals(404, request("PUT", path, stranger, body).statusCode());
-        assertNotEquals("natjang_visitor=bad", cookie(request("GET", "", "natjang_visitor=bad", null)));
-        String unknown = "natjang_visitor=00000000-0000-0000-0000-000000000000";
+        assertNotEquals("galpi_visitor=bad", cookie(request("GET", "", "galpi_visitor=bad", null)));
+        String unknown = "galpi_visitor=00000000-0000-0000-0000-000000000000";
         assertNotEquals(unknown, cookie(request("GET", "", unknown, null)));
         assertEquals(200, request("POST", "", identity, null).statusCode());
         assertEquals(2, mapper.readTree(request("GET", "", identity, null).body()).size());
