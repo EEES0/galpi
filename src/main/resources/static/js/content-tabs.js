@@ -137,6 +137,13 @@ function selectContentTab(tab) {
     } else {
         summaryViewRequest++;
         summaryPanel.setAttribute("aria-busy", "false");
+        // Re-register ranges after revealing the transcript so hidden-panel highlights repaint.
+        const view = summaryViewRequest;
+        const pageId = currentPage?.id;
+        requestAnimationFrame(() => {
+            if (view !== summaryViewRequest || currentPage?.id !== pageId || transcriptPanel.hidden) return;
+            refreshSavedMarks();
+        });
         if (summaryRefreshDeferred) scheduleSummaryRefresh();
     }
 }

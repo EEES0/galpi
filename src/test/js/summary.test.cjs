@@ -39,6 +39,7 @@ function setup(handler) {
     elements.get('transcript').appendChild(finalElement);
     const calls = [];
     const timers = new Map();
+    const frames = [];
     let nextTimer = 0;
     let observeChanges;
     let saves = 0;
@@ -46,6 +47,7 @@ function setup(handler) {
         console: { ...console, error() {} }, AbortController, Node: { TEXT_NODE: 3 },
         setTimeout(callback) { const id = ++nextTimer; timers.set(id, callback); return id; },
         clearTimeout(id) { timers.delete(id); },
+        requestAnimationFrame(callback) { frames.push(callback); },
         MutationObserver: class { constructor(callback) { observeChanges = callback; } observe() {} },
         currentPage: { id: 'one' }, pagesReady: true, pageNavigationBusy: false,
         finalElement, summaryElement: elements.get('page-summary'),
@@ -69,6 +71,7 @@ function setup(handler) {
         vm.runInContext(fs.readFileSync(path.join(__dirname, '../../main/resources/static/js', name), 'utf8'), context);
     }
     return { context, elements, finalElement, original, calls, node,
+        runFrames: () => frames.splice(0).forEach(callback => callback()),
         mutate: () => observeChanges(),
         runTimers: async () => {
             const callbacks = [...timers.values()];
@@ -95,6 +98,35 @@ test('save precedes DB lookup and a successful lookup is reused from memory', as
     assert.equal(app.elements.get('transcript').hidden, false);
     assert.equal(app.elements.get('page-summary').hidden, true);
     assert.equal(app.original.textContent, 'Gravity attracts objects.');
+});
+
+test('returning to the transcript refreshes saved highlights in the next frame without refetching', async () => {
+    const app = setup();
+    await app.load();
+    let refreshes = 0;
+    app.context.refreshSavedMarks = () => {
+        assert.equal(app.elements.get('transcript').hidden, false);
+        refreshes++;
+    };
+    app.run('selectContentTab(transcriptTab)');
+    assert.equal(refreshes, 0, 'wait until the transcript is revealed for rendering');
+    app.runFrames();
+    assert.equal(refreshes, 1);
+    assert.equal(app.calls.length, 1, 'reuse the current page state');
+
+    app.run('selectContentTab(transcriptTab); selectContentTab(summaryTab)');
+    app.runFrames();
+    assert.equal(refreshes, 1, 'ignore a frame after switching back to the summary');
+});
+
+test('a queued highlight refresh does not run against another page', async () => {
+    const app = setup();
+    await app.load();
+    let refreshes = 0;
+    app.context.refreshSavedMarks = () => { refreshes++; };
+    app.run('selectContentTab(transcriptTab); currentPage = { id: "two" }');
+    app.runFrames();
+    assert.equal(refreshes, 0);
 });
 
 test('missing DB summary triggers generation; changed transcript bypasses memory cache', async () => {
