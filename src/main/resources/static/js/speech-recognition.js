@@ -2,7 +2,7 @@ if (!SpeechRecognition) {
     setRecognitionStatus("unsupported");
     startBtn.disabled = true;
 } else {
-    const recognition = new SpeechRecognition();
+    let recognition = new SpeechRecognition();
 
     recognition.continuous = true;
     recognition.interimResults = true;
@@ -12,11 +12,49 @@ if (!SpeechRecognition) {
     let isRunning = false;
     let isStarting = false;
     let endStatusTimer;
+    let stopTimer;
     let stopWaiters = [];
     const INTERIM_COMMIT_LENGTH = 50;
     const resultProgress = new Map();
     let restartTimer;
     let retryDelay = 500;
+    let restartAttempts = 0;
+    let recognitionFailed = false;
+    const MAX_RESTART_ATTEMPTS = 5;
+
+    function showStoppedStatus() {
+        startBtn.setAttribute("aria-pressed", "false");
+        document.body.classList.remove("listening");
+        setRecognitionStatus(recognitionFailed ? "recognitionError" : "ended");
+        clearTimeout(endStatusTimer);
+        if (!recognitionFailed) {
+            endStatusTimer = setTimeout(() => {
+                if (!shouldListen) setRecognitionStatus("start");
+            }, 1000);
+        }
+    }
+
+    function requestStop() {
+        if (stopTimer) return;
+        // Some engines delay or omit end after stop. Retire that instance so
+        // late events cannot modify a restarted session or another page.
+        stopTimer = setTimeout(() => {
+            const previous = recognition;
+            const next = new SpeechRecognition();
+            next.continuous = true;
+            next.interimResults = true;
+            next.maxAlternatives = 1;
+            next.lang = previous.lang;
+            for (const name of ["onstart", "onresult", "onerror", "onend"]) {
+                next[name] = previous[name];
+                previous[name] = null;
+            }
+            recognition = next;
+            try { previous.abort(); } catch (error) { console.error(error); }
+            recognition.onend();
+        }, 2000);
+        try { recognition.stop(); } catch (error) { console.error(error); }
+    }
 
     function saveTranscript(text) {
         if (!text.trim()) return;
@@ -37,6 +75,13 @@ if (!SpeechRecognition) {
     function scheduleRestart() {
         clearTimeout(restartTimer);
         if (!shouldListen) return;
+        if (restartAttempts >= MAX_RESTART_ATTEMPTS) {
+            shouldListen = false;
+            recognitionFailed = true;
+            showStoppedStatus();
+            return;
+        }
+        restartAttempts++;
         setRecognitionStatus("reconnecting");
         restartTimer = setTimeout(startRecognition, retryDelay);
         retryDelay = Math.min(retryDelay * 2, 10000);
@@ -44,10 +89,11 @@ if (!SpeechRecognition) {
     window.stopPageRecognition = () => {
         shouldListen = false;
         clearTimeout(restartTimer);
+        showStoppedStatus();
         if (!isRunning && !isStarting) return Promise.resolve();
         return new Promise(resolve => {
             stopWaiters.push(resolve);
-            if (isRunning) recognition.stop();
+            if (isRunning || isStarting) requestStop();
         });
     };
 
@@ -63,7 +109,13 @@ if (!SpeechRecognition) {
         } catch (error) {
             isStarting = false;
             console.error(error);
-            scheduleRestart();
+            if (["NotAllowedError", "SecurityError", "NotSupportedError"].includes(error.name)) {
+                shouldListen = false;
+                recognitionFailed = true;
+                showStoppedStatus();
+            } else {
+                scheduleRestart();
+            }
         }
     }
 
@@ -72,18 +124,21 @@ if (!SpeechRecognition) {
         shouldListen = !shouldListen;
         startBtn.setAttribute("aria-pressed", String(shouldListen));
         if (shouldListen) {
+            restartAttempts = 0;
+            retryDelay = 500;
+            recognitionFailed = false;
             setRecognitionStatus("listening");
             startRecognition();
         } else {
             clearTimeout(restartTimer);
-            setRecognitionStatus("ended");
-            if (isRunning) recognition.stop();
+            showStoppedStatus();
+            if (isRunning || isStarting) requestStop();
         }
     });
 
     inputLanguageSelect.addEventListener("change", () => {
         if (isRunning) {
-            recognition.stop();
+            requestStop();
         } else if (shouldListen) {
             startRecognition();
         }
@@ -100,17 +155,22 @@ if (!SpeechRecognition) {
 
 
     recognition.onstart = () => {
-        isStarting = false;가
+        isStarting = false;
         clearTimeout(endStatusTimer);
         isRunning = true;
         document.body.classList.add("listening");
         startBtn.setAttribute("aria-pressed", String(shouldListen));
-        setRecognitionStatus("listening");
-        if (!shouldListen) recognition.stop();
+        if (!shouldListen) {
+            showStoppedStatus();
+            requestStop();
+        } else {
+            setRecognitionStatus("listening");
+        }
     };
 
     recognition.onresult = (event) => {
         retryDelay = 500;
+        restartAttempts = 0;
         let interimText = "";
         for (let i = 0; i < event.results.length; i++) {
             const result = event.results[i];
@@ -155,10 +215,15 @@ if (!SpeechRecognition) {
             "language-not-supported"
         ].includes(event.error)) {
             shouldListen = false;
+            recognitionFailed = true;
+            clearTimeout(restartTimer);
+            showStoppedStatus();
         }
     };
 
     recognition.onend = () => {
+        clearTimeout(stopTimer);
+        stopTimer = undefined;
         isStarting = false;
         isRunning = false;
         flushInterim();
@@ -170,14 +235,7 @@ if (!SpeechRecognition) {
             scheduleRestart();
         } else {
             startBtn.disabled = false;
-            startBtn.setAttribute("aria-pressed", "false");
-            setRecognitionStatus("ended");
-            clearTimeout(endStatusTimer);
-            endStatusTimer = setTimeout(() => {
-                if (!shouldListen && !isRunning) {
-                    setRecognitionStatus("start");
-                }
-            }, 1000);
+            showStoppedStatus();
         }
     };
 }
