@@ -12,6 +12,19 @@ const pageTitle = document.querySelector(".page-title");
 const newPageButton = document.querySelector(".new-page");
 const pageList = document.getElementById("page-list");
 const pageSavedChecks = new Map();
+const userLanguagePreferenceKey = "galpi-user-language";
+let preferredUserLanguage = null;
+try {
+    const saved = localStorage.getItem(userLanguagePreferenceKey);
+    if (supportedLanguages.has(saved)) {
+        preferredUserLanguage = saved;
+        userLanguageSelect.value = saved;
+    }
+} catch {}
+userLanguageSelect.addEventListener("change", () => {
+    preferredUserLanguage = userLanguageSelect.value;
+    try { localStorage.setItem(userLanguagePreferenceKey, preferredUserLanguage); } catch {}
+});
 
 function setPageSavedState(saved) {
     const check = pageSavedChecks.get(currentPage?.id);
@@ -108,6 +121,9 @@ function displayPage(page) {
     inputLanguageSelect.value = "ko-KR";
     userLanguageSelect.value = "ko-KR";
     restoreExplanations(page.state);
+    // The interface language follows the user's preference, not each page's snapshot.
+    if (preferredUserLanguage) userLanguageSelect.value = preferredUserLanguage;
+    preferredUserLanguage = userLanguageSelect.value;
     pageChangeNumber = pageSavedNumber = 0;
     pageSaveConflict = false;
     pagesReady = true;
@@ -198,6 +214,7 @@ async function initializePages() {
     status.hidden = false;
     message.dataset.i18n = "pageLoading";
     message.textContent = t("pageLoading");
+    message.setAttribute("aria-busy", "true");
     retry.hidden = true;
     lockPageEditor(true);
     setPageSavedState(false);
@@ -218,6 +235,7 @@ async function initializePages() {
         message.textContent = t(message.dataset.i18n);
         retry.hidden = false;
     } finally {
+        message.setAttribute("aria-busy", "false");
         clearTimeout(timeout);
         pageInitializationPending = false;
     }

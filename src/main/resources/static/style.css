@@ -477,3 +477,33 @@ main { margin-top: max(24px, calc(26.01svh - 45px)); }
 
 /* Lift the title without shifting the recording controls. */
 .page-header { position: relative; top: -12px; }
+
+/* Quiet document-line drawing and text pulse during pending requests. */
+:is(#page-load-message[aria-busy="true"], #page-summary[aria-busy="true"], #response[aria-busy="true"], .utterance-translation[data-state="loading"], .correction-pending:not([hidden]), #status[data-loading="true"]) {
+    animation: loading-text-pulse 1.8s ease-in-out infinite;
+}
+:is(#page-load-message[aria-busy="true"], #page-summary[aria-busy="true"], #response[aria-busy="true"], .utterance-translation[data-state="loading"], .correction-pending:not([hidden]), #status[data-loading="true"])::before {
+    content: "";
+    display: inline-block;
+    width: 24px;
+    height: 24px;
+    margin-right: 8px;
+    vertical-align: middle;
+    background: currentColor;
+    mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.35' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M7 3.5h8l3 3V21H5V3.5h2M15 3.5V7h3M8 11h7M8 14.5h7M8 18h4'/%3E%3C/svg%3E") center / contain no-repeat;
+    animation: loading-line-draw 1.8s ease-in-out infinite;
+}
+@keyframes loading-text-pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: .55; }
+}
+@keyframes loading-line-draw {
+    0% { clip-path: inset(0 0 100% 0); }
+    65%, 100% { clip-path: inset(0); }
+}
+@media (prefers-reduced-motion: reduce) {
+    :is(#page-load-message, #page-summary, #response, .utterance-translation, .correction-pending, #status),
+    :is(#page-load-message, #page-summary, #response, .utterance-translation, .correction-pending, #status)::before {
+        animation: none !important;
+    }
+}

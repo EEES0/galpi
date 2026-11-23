@@ -532,6 +532,7 @@ function t(key) {
 
 function setRecognitionStatus(key) {
     recognitionStatus = key;
+    statusElement.setAttribute("data-loading", String(key === "reconnecting"));
     statusElement.textContent = t(key);
     startBtn.setAttribute("aria-label", t(startBtn.getAttribute("aria-pressed") === "true" ? "stop" : "start"));
 }

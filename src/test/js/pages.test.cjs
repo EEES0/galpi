@@ -4,12 +4,13 @@ const vm = require('node:vm');
 const fs = require('node:fs');
 const path = require('node:path');
 
-function setup() {
+function setup(preferences = new Map()) {
     const elements = new Map();
     const element = key => {
         if (!elements.has(key)) elements.set(key, {
             value: '', textContent: '', hidden: false, children: [], dataset: {},
-            addEventListener() {}, setAttribute() {},
+            handlers: {},
+            addEventListener(name, handler) { this.handlers[name] = handler; }, setAttribute() {},
             querySelectorAll() { return this.children; },
             replaceChildren() { this.children = []; },
             append(child) { this.children.push(child); }
@@ -28,13 +29,19 @@ function setup() {
         explanation: element('explanation'), finalElement: element('final'), interimElement: element('interim'),
         selectedElement: element('selected'), responseElement: element('response'),
         inputLanguageSelect: element('input'), userLanguageSelect: element('user'),
+        supportedLanguages: new Set(['ko-KR', 'en-US', 'ja-JP']),
+        localStorage: { getItem: key => preferences.get(key), setItem: (key, value) => preferences.set(key, value) },
         storageGeneration: 0, explanationRequest: 0, selectionTimer: null,
         pendingSegmentTranslations: new Map(), pendingExplanations: new Map(),
         requestedExplanations: new Map(), savedExplanations: new Map(), translatedSegments: new Map(),
         t: key => key, setTranscriptEditing() {},
         hideExplanation() {}, applyTranslations() {}, refreshSavedMarks() {}, translateCompletedSegments() {},
         capturePageState: () => structuredClone(state),
-        restoreExplanations: saved => { state = saved || { segments: [], translations: [], explanations: [] }; },
+        restoreExplanations: saved => {
+            state = saved || { segments: [], translations: [], explanations: [] };
+            if (saved?.inputLanguage) element('input').value = saved.inputLanguage;
+            if (saved?.userLanguage) element('user').value = saved.userLanguage;
+        },
         fetch: async (url, options) => {
             const method = options.method || 'GET';
             requests.push({ method, url, keepalive: options.keepalive });
@@ -110,6 +117,25 @@ test('initial load failure or timeout offers retry and a successful retry unlock
         assert.equal(app.element('main').inert, false);
         assert.equal(app.database.size, 1);
     }
+});
+
+test('user language follows the preference across old pages, new pages, deletion and reload', async () => {
+    const preferences = new Map();
+    const app = setup(preferences);
+    await app.run('initializePages()');
+    app.database.get('1').state = { userLanguage: 'ko-KR', inputLanguage: 'ja-JP', segments: [], translations: [], explanations: [] };
+    app.element('user').value = 'en-US';
+    app.element('user').handlers.change();
+    await app.run('navigatePage()');
+    assert.equal(app.element('user').value, 'en-US');
+    await app.run('navigatePage("1")');
+    assert.equal(app.element('user').value, 'en-US');
+    assert.equal(app.element('input').value, 'ja-JP', 'input language still follows the page');
+    await app.run('deletePage("1")');
+    assert.equal(app.element('user').value, 'en-US');
+    const reload = setup(preferences);
+    await reload.run('initializePages()');
+    assert.equal(reload.element('user').value, 'en-US');
 });
 
 test('conflicting changes are preserved in editor and prevent navigation', async () => {

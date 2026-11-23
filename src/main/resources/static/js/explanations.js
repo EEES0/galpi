@@ -32,6 +32,7 @@ function refreshSavedMarks() {
 }
 
 function renderExplanation(data) {
+    responseElement.setAttribute("aria-busy", "false");
     responseElement.replaceChildren();
     const text = value => typeof value === "string" ? value.trim() : "";
     const originalTerm = text(data?.term);
@@ -67,6 +68,7 @@ function renderEntry(entry) {
     if (entry.data) {
         renderExplanation(entry.data);
     } else {
+        responseElement.setAttribute("aria-busy", String(!entry.error));
         responseElement.textContent = entry.error
             ? t("requestError")
             : t("loading");
@@ -141,6 +143,7 @@ async function sendSelection(selectedTerm, context, segmentation) {
     refreshSavedMarks();
 
     try {
+        responseElement.setAttribute("aria-busy", "true");
         responseElement.textContent = t("loading");
 
         let pending = pendingExplanations.get(key);
@@ -197,6 +200,7 @@ async function sendSelection(selectedTerm, context, segmentation) {
         refreshSavedMarks();
         if (activeExplanationKey !== key || startedInTranscript) return;
         console.error("API Error:", error);
+        responseElement.setAttribute("aria-busy", "false");
         responseElement.textContent = t("requestError");
         if (!explanation.hidden) showExplanation();
     }
