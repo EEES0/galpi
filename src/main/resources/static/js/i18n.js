@@ -403,13 +403,13 @@ const translations = {
 
 const correctionLabels = {
     ko: ["발언 문맥 교정", "확정 전 AI로 교정합니다. 실패하면 원문을 저장합니다.", "발언 교정 중…"],
-    en: ["Contextual speech correction", "Correct with AI before saving. Keep the original if correction fails.", "Correcting speech…"],
+    en: ["Contextual speech correction", "Smooth speech in context before saving. Keep the original if correction fails.", "Correcting speech…"],
     ja: ["発言の文脈補正", "保存前にAIで補正します。失敗した場合は原文を保存します。", "発言を補正中…"],
     zh: ["语境发言纠正", "保存前使用AI纠正。失败时保留原文。", "正在纠正发言…"],
     vi: ["Hiệu chỉnh theo ngữ cảnh", "AI hiệu chỉnh trước khi lưu. Giữ bản gốc nếu thất bại.", "Đang hiệu chỉnh…"],
-    es: ["Corrección contextual", "Corregir con IA antes de guardar. Conservar el original si falla.", "Corrigiendo…"],
+    es: ["Corrección contextual", "Mejorar el discurso según el contexto antes de guardar. Conservar el original si falla.", "Corrigiendo…"],
     fr: ["Correction contextuelle", "Corriger avec l’IA avant de sauvegarder. Conserver l’original en cas d’échec.", "Correction en cours…"],
-    de: ["Kontextbezogene Korrektur", "Vor dem Speichern mit KI korrigieren. Bei Fehlern das Original behalten.", "Sprache wird korrigiert…"]
+    de: ["Kontextbezogene Korrektur", "Aussagen vor dem Speichern im Kontext glätten. Bei Fehlern das Original behalten.", "Sprache wird korrigiert…"]
 };
 for (const [language, labels] of Object.entries(correctionLabels)) {
     Object.assign(translations[language], { sentenceCorrection: labels[0], sentenceCorrectionHelp: labels[1], correctingSentence: labels[2] });
@@ -427,6 +427,85 @@ const settingsLabels = {
 for (const [language, labels] of Object.entries(settingsLabels)) {
     Object.assign(translations[language], { settings: labels[0], awaitingSpeechFinal: labels[1] });
 }
+
+
+
+
+const interfaceLabels = {
+    "ko": {
+        "sentenceCorrection": "발언 문맥 자동 다듬기",
+        "sentenceCorrectionHelp": "문맥에 맞게 발언을 다듬습니다. 원문은 완료될 때까지 유지됩니다.",
+        "confirmClear": "기록한 내용과 저장된 설명을 초기화할까요? 이 작업은 되돌릴 수 없습니다.",
+        "summaryEmpty": "먼저 받아쓰기로 내용을 기록해 주세요.",
+        "guideTitle": "말하는 순간, 기록이 시작됩니다",
+        "guideDetail": "발언은 스크립트로 남고, 필요한 내용은 요약으로 살펴볼 수 있습니다.",
+        "closeMenu": "페이지 메뉴 닫기"
+    },
+    "en": {
+        "sentenceCorrection": "Automatically refine speech",
+        "sentenceCorrectionHelp": "Refine speech in context. The original stays visible until complete.",
+        "confirmClear": "Reset the transcript and saved explanations? This cannot be undone.",
+        "summaryEmpty": "Start dictation to record some content first.",
+        "guideTitle": "Your words become a record",
+        "guideDetail": "Keep a transcript of your speech and review the key points in a summary.",
+        "closeMenu": "Close page menu"
+    },
+    "ja": {
+        "sentenceCorrection": "発言を文脈に沿って自動調整",
+        "sentenceCorrectionHelp": "文脈に合わせて発言を整えます。完了までは原文を表示します。",
+        "confirmClear": "記録と保存した説明をリセットしますか？この操作は元に戻せません。",
+        "summaryEmpty": "まず音声入力で内容を記録してください。",
+        "guideTitle": "話すことから、記録が始まります",
+        "guideDetail": "発言を文字に残し、要約で要点を確認できます。",
+        "closeMenu": "ページメニューを閉じる"
+    },
+    "zh": {
+        "sentenceCorrection": "按语境自动润色发言",
+        "sentenceCorrectionHelp": "根据语境润色发言，完成前保留原文显示。",
+        "confirmClear": "重置文字记录和已保存的解释？此操作无法撤销。",
+        "summaryEmpty": "请先使用语音输入记录内容。",
+        "guideTitle": "开口说话，记录即刻开始",
+        "guideDetail": "将发言保留为文字，并通过摘要回顾要点。",
+        "closeMenu": "关闭页面菜单"
+    },
+    "vi": {
+        "sentenceCorrection": "Tự động chỉnh lời nói theo ngữ cảnh",
+        "sentenceCorrectionHelp": "Chỉnh lời nói theo ngữ cảnh. Bản gốc vẫn hiển thị cho đến khi hoàn tất.",
+        "confirmClear": "Đặt lại bản ghi và các giải thích đã lưu? Không thể hoàn tác thao tác này.",
+        "summaryEmpty": "Hãy dùng nhập liệu bằng giọng nói để ghi lại nội dung trước.",
+        "guideTitle": "Lời nói trở thành bản ghi",
+        "guideDetail": "Lưu lời nói thành văn bản và xem lại các ý chính qua bản tóm tắt.",
+        "closeMenu": "Đóng menu trang"
+    },
+    "es": {
+        "sentenceCorrection": "Ajustar el dictado automáticamente",
+        "sentenceCorrectionHelp": "Ajusta el dictado según el contexto. El original sigue visible hasta terminar.",
+        "confirmClear": "¿Restablecer la transcripción y las explicaciones guardadas? Esta acción no se puede deshacer.",
+        "summaryEmpty": "Primero, usa el dictado para registrar contenido.",
+        "guideTitle": "Tus palabras quedan registradas",
+        "guideDetail": "Guarda tus palabras en una transcripción y repasa los puntos clave en un resumen.",
+        "closeMenu": "Cerrar el menú de páginas"
+    },
+    "fr": {
+        "sentenceCorrection": "Améliorer automatiquement la dictée",
+        "sentenceCorrectionHelp": "Ajuste la dictée au contexte. Le texte original reste visible jusqu’à la fin.",
+        "confirmClear": "Réinitialiser la transcription et les explications enregistrées ? Cette action est irréversible.",
+        "summaryEmpty": "Commencez par dicter pour enregistrer du contenu.",
+        "guideTitle": "Vos paroles prennent forme",
+        "guideDetail": "Conservez une transcription et retrouvez les points clés dans un résumé.",
+        "closeMenu": "Fermer le menu des pages"
+    },
+    "de": {
+        "sentenceCorrection": "Diktat automatisch überarbeiten",
+        "sentenceCorrectionHelp": "Überarbeitet das Diktat im Kontext. Das Original bleibt bis zum Abschluss sichtbar.",
+        "confirmClear": "Transkript und gespeicherte Erklärungen zurücksetzen? Dies kann nicht rückgängig gemacht werden.",
+        "summaryEmpty": "Zeichnen Sie zuerst Inhalte mit der Diktierfunktion auf.",
+        "guideTitle": "Aus Worten werden Aufzeichnungen",
+        "guideDetail": "Halten Sie Gesprochenes als Transkript fest und lesen Sie die Kernpunkte in der Zusammenfassung.",
+        "closeMenu": "Seitenmenü schließen"
+    }
+};
+for (const [language, labels] of Object.entries(interfaceLabels)) Object.assign(translations[language], labels);
 
 let recognitionStatus = "start";
 

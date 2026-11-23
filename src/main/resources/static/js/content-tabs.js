@@ -46,6 +46,11 @@ function renderSummary(data) {
 }
 
 async function loadPageSummary() {
+    if (!Array.from(finalElement.querySelectorAll(".segment")).some(node => node.textContent.trim())) {
+        summaryPanel.textContent = t("summaryEmpty");
+        summaryPanel.setAttribute("aria-busy", "false");
+        return;
+    }
     if (!pagesReady || !currentPage || pageNavigationBusy) return;
     clearTimeout(summaryRefreshTimer);
     summaryAutoRefreshEnabled = true;
@@ -120,6 +125,7 @@ async function loadPageSummary() {
 }
 
 function selectContentTab(tab) {
+    if (tab.disabled) return;
     const showSummary = tab === summaryTab;
     if (showSummary && !summaryPanel.hidden && summaryPanel.dataset.failed !== "true") return;
     transcriptTab.setAttribute("aria-selected", String(!showSummary));
@@ -155,6 +161,7 @@ for (const tab of [transcriptTab, summaryTab]) {
         event.preventDefault();
         const next = event.key === "Home" ? transcriptTab : event.key === "End" ? summaryTab
             : tab === transcriptTab ? summaryTab : transcriptTab;
+        if (next.disabled) return;
         selectContentTab(next);
         next.focus();
     });

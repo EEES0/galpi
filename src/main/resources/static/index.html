@@ -4,25 +4,29 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <title data-i18n="brand">갈피</title>
-        <script src="js/theme.js?v=20261123-settings3"></script>
-        <link rel="stylesheet" href="style.css?v=20261123-settings3">
-        <script src="js/state.js?v=20261123-settings3" defer></script>
-        <script src="js/i18n.js?v=20261123-settings3" defer></script>
-        <script src="js/transcript.js?v=20261123-settings3" defer></script>
-        <script src="js/selection-context.js?v=20261123-settings3" defer></script>
-        <script src="js/storage.js?v=20261123-settings3" defer></script>
-        <script src="js/explanations.js?v=20261123-settings3" defer></script>
-        <script src="js/pages.js?v=20261123-settings3" defer></script>
-        <script src="js/controls.js?v=20261123-settings3" defer></script>
-        <script src="js/correction.js?v=20261123-settings3" defer></script>
-        <script src="js/speech-recognition.js?v=20261123-settings3" defer></script>
-        <script src="js/selection.js?v=20261123-settings3" defer></script>
-        <script src="js/content-tabs.js?v=20261123-settings3" defer></script>
-        <script src="script.js?v=20261123-settings3" defer></script>
+        <script src="js/theme.js?v=20261123-ui5"></script>
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.css">
+        <link rel="stylesheet" href="style.css?v=20261123-ui5">
+        <script src="js/state.js?v=20261123-ui5" defer></script>
+        <script src="js/i18n.js?v=20261123-ui5" defer></script>
+        <script src="js/transcript.js?v=20261123-ui5" defer></script>
+        <script src="js/selection-context.js?v=20261123-ui5" defer></script>
+        <script src="js/storage.js?v=20261123-ui5" defer></script>
+        <script src="js/explanations.js?v=20261123-ui5" defer></script>
+        <script src="js/pages.js?v=20261123-ui5" defer></script>
+        <script src="js/controls.js?v=20261123-ui5" defer></script>
+        <script src="js/correction.js?v=20261123-ui5" defer></script>
+        <script src="js/speech-recognition.js?v=20261123-ui5" defer></script>
+        <script src="js/selection.js?v=20261123-ui5" defer></script>
+        <script src="js/content-tabs.js?v=20261123-ui5" defer></script>
+        <script src="js/interface.js?v=20261123-ui5" defer></script>
+        <script src="script.js?v=20261123-ui5" defer></script>
     </head>
     <body>
-        <nav class="sidebar" aria-label="페이지 메뉴" data-i18n-aria="pageMenu">
-            <div class="workspace-brand"><span class="workspace-mark" aria-hidden="true">G</span><span data-i18n="brand">갈피</span></div>
+        <div class="mobile-bar"><button id="menu-toggle" type="button" aria-controls="page-sidebar" aria-expanded="false" data-i18n-aria="pageMenu"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button><span data-i18n="brand">갈피</span></div>
+        <button id="drawer-backdrop" type="button" tabindex="-1" data-i18n-aria="closeMenu" hidden></button>
+        <nav id="page-sidebar" class="sidebar" aria-label="페이지 메뉴" data-i18n-aria="pageMenu">
+            <button id="menu-close" type="button" data-i18n-aria="closeMenu">×</button><div class="workspace-brand"><span class="workspace-mark" aria-hidden="true"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" aria-hidden="true"><path d="M6 4h12v17l-6-4-6 4V4Z"/></svg></span><span data-i18n="brand">갈피</span></div>
             <button class="new-page" type="button">
                 <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                     <path d="M12 4H5a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2h13a2 2 0 0 0 2-2v-7"/>
@@ -34,21 +38,17 @@
         </nav>
         <main>
             <header class="page-header">
-                <svg class="page-icon" width="54" height="54" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
-                    <path d="M5 8H25M5 17H18M5 26H13" stroke="#92928F" stroke-width="3.5"/>
-                    <path d="M18 23L29 12L34 17L23 28L16 30L18 23Z" fill="#92928F"/>
-                    <path d="M30.5 10.5L33 8C33.6 7.4 34.4 7.4 35 8L38 11C38.6 11.6 38.6 12.4 38 13L35.5 15.5L30.5 10.5Z" fill="#92928F"/>
-                </svg>
+                <svg class="page-icon" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13 4H5v16h14v-8M10 14l1-4 7-7 3 3-7 7-4 1Z"/></svg>
                 <div class="title-row">
                     <input class="page-title" type="text" maxlength="200" placeholder="제목을 입력하세요" data-i18n-placeholder="titlePlaceholder" aria-label="페이지 제목" data-i18n-aria="pageTitle" autocomplete="off">
                 </div>
             </header>
             <div class="toolbar" role="group" aria-label="음성 인식 도구" data-i18n-aria="speechTools">
                 <button id="start" type="button" aria-pressed="false">
-                    <span class="record-dot" aria-hidden="true"></span>
+                    <span class="audio-wave" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
                     <span id="status" role="status">받아쓰기 시작</span>
                 </button>
-                <button id="clear" data-i18n="clear">초기화</button>
+                <button id="clear" disabled data-i18n="clear">초기화</button>
                 <button id="edit-transcript" data-i18n="editTranscript" type="button" aria-pressed="false">&#50896;&#47928; &#49688;&#51221;</button>
                 <details class="settings-menu">
                     <summary class="settings-toggle" aria-label="설정" data-i18n-aria="settings" title="설정" data-i18n-title="settings">
@@ -94,11 +94,11 @@
                     </label>
                     <div class="setting-option">
                         <label class="setting-switch" for="sentence-correction">
-                            <span class="setting-label" data-i18n="sentenceCorrection">발언 문맥 교정</span>
+                            <span class="setting-label" data-i18n="sentenceCorrection">발언 문맥 자동 다듬기</span>
                             <input id="sentence-correction" type="checkbox" role="switch" aria-describedby="correction-help" checked>
                             <span class="switch-track" aria-hidden="true"></span>
                         </label>
-                        <small id="correction-help" class="correction-help" data-i18n="sentenceCorrectionHelp">확정 전 AI로 교정합니다. 실패하면 원문을 저장합니다.</small>
+                        <small id="correction-help" class="correction-help" data-i18n="sentenceCorrectionHelp">문맥에 맞게 발언을 다듬습니다. 원문은 완료될 때까지 유지됩니다.</small>
                     </div>
                 </div>
             </div>
@@ -107,9 +107,9 @@
             <div class="content-tabs">
                 <div class="content-tab-list" role="tablist" aria-label="페이지 내용" data-i18n-aria="pageContent">
                 <button class="transcript-heading" id="transcript-tab" type="button" role="tab" aria-selected="true" aria-controls="transcript" data-i18n="transcript">스크립트</button>
-                <button class="transcript-heading summary-heading" id="summary-tab" data-i18n="summary" type="button" role="tab" aria-selected="false" aria-controls="page-summary" tabindex="-1">요약</button>
+                <button class="transcript-heading summary-heading" id="summary-tab" disabled data-i18n="summary" type="button" role="tab" aria-selected="false" aria-controls="page-summary" tabindex="-1">요약</button>
                 </div>
-                <button id="copy-content" type="button" data-i18n-aria="copyAll" data-i18n-title="copyAll" aria-label="전체 복사" title="전체 복사">
+                <button id="copy-content" type="button" disabled data-i18n-aria="copyAll" data-i18n-title="copyAll" aria-label="전체 복사" title="전체 복사">
                     <svg class="copy-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h3"/></svg>
                     <svg class="copy-check" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 4 4L19 6"/></svg>
                 </button>
