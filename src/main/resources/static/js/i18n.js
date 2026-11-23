@@ -401,6 +401,20 @@ const translations = {
     }
 };
 
+const correctionLabels = {
+    ko: ["발언 문맥 교정", "확정 전 AI로 교정합니다. 실패하면 원문을 저장합니다.", "발언 교정 중…"],
+    en: ["Contextual speech correction", "Correct with AI before saving. Keep the original if correction fails.", "Correcting speech…"],
+    ja: ["発言の文脈補正", "保存前にAIで補正します。失敗した場合は原文を保存します。", "発言を補正中…"],
+    zh: ["语境发言纠正", "保存前使用AI纠正。失败时保留原文。", "正在纠正发言…"],
+    vi: ["Hiệu chỉnh theo ngữ cảnh", "AI hiệu chỉnh trước khi lưu. Giữ bản gốc nếu thất bại.", "Đang hiệu chỉnh…"],
+    es: ["Corrección contextual", "Corregir con IA antes de guardar. Conservar el original si falla.", "Corrigiendo…"],
+    fr: ["Correction contextuelle", "Corriger avec l’IA avant de sauvegarder. Conserver l’original en cas d’échec.", "Correction en cours…"],
+    de: ["Kontextbezogene Korrektur", "Vor dem Speichern mit KI korrigieren. Bei Fehlern das Original behalten.", "Sprache wird korrigiert…"]
+};
+for (const [language, labels] of Object.entries(correctionLabels)) {
+    Object.assign(translations[language], { sentenceCorrection: labels[0], sentenceCorrectionHelp: labels[1], correctingSentence: labels[2] });
+}
+
 let recognitionStatus = "start";
 
 function t(key) {

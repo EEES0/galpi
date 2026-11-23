@@ -58,10 +58,16 @@ if (!SpeechRecognition) {
 
     function saveTranscript(text) {
         if (!text.trim()) return;
-        const paragraph = appendSegment(text.trim(), recognition.lang, new Date().toISOString());
-        translateSegment(paragraph);
-        refreshSavedMarks();
-        persistExplanations();
+        const language = recognition.lang;
+        const timestamp = new Date().toISOString();
+        const commit = corrected => {
+            const paragraph = appendSegment(corrected, language, timestamp);
+            translateSegment(paragraph);
+            refreshSavedMarks();
+            persistExplanations();
+        };
+        if (window.queueTranscriptCorrection) window.queueTranscriptCorrection(text.trim(), commit);
+        else commit(text.trim());
     }
 
     function flushInterim() {
@@ -86,15 +92,19 @@ if (!SpeechRecognition) {
         restartTimer = setTimeout(startRecognition, retryDelay);
         retryDelay = Math.min(retryDelay * 2, 10000);
     }
-    window.stopPageRecognition = () => {
+    window.stopPageRecognition = async () => {
         shouldListen = false;
         clearTimeout(restartTimer);
         showStoppedStatus();
-        if (!isRunning && !isStarting) return Promise.resolve();
-        return new Promise(resolve => {
+        if (!isRunning && !isStarting) {
+            await window.flushTranscriptCorrections?.();
+            return;
+        }
+        await new Promise(resolve => {
             stopWaiters.push(resolve);
             if (isRunning || isStarting) requestStop();
         });
+        await window.flushTranscriptCorrections?.();
     };
 
     function startRecognition() {
@@ -188,7 +198,7 @@ if (!SpeechRecognition) {
                 progress.final = true;
             } else {
                 // Freeze displayed prefixes locally; the API's isFinal is read-only.
-                while (Array.from(remaining).length >= INTERIM_COMMIT_LENGTH) {
+                while (!window.isSentenceCorrectionEnabled?.() && Array.from(remaining).length >= INTERIM_COMMIT_LENGTH) {
                     const chunk = Array.from(remaining).slice(0, INTERIM_COMMIT_LENGTH).join("");
                     saveTranscript(chunk);
                     progress.committed += chunk.length;

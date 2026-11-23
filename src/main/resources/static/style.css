@@ -351,3 +351,8 @@ button:disabled:hover { background: transparent; }
     #page-list { gap: 12px; }
     .saved-page-row + .saved-page-row { margin-top: 0; }
 }
+
+.correction-setting { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--ink); }
+.correction-setting input { accent-color: var(--ink); width: 16px; height: 16px; }
+.correction-help { display: block; max-width: 230px; font-size: 12px; line-height: 1.5; opacity: .7; }
+.correction-pending { font-size: 13px; opacity: .7; }

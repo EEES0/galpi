@@ -1,4 +1,4 @@
-﻿const { test } = require('node:test');
+const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const vm = require('node:vm');
 const fs = require('node:fs');
@@ -65,4 +65,39 @@ test('permission errors stay visible after end instead of retrying', () => {
     app.instances[0].onend(); app.tick(1000);
     assert.equal(app.statuses.at(-1), 'recognitionError');
     assert.equal(app.instances[0].starts, 1);
+});
+
+function speechResult(text, isFinal) {
+    const result = [{ transcript: text }]; result.isFinal = isFinal;
+    return { results: [result] };
+}
+test('enabled correction waits for final speech and commits corrected text before translation', () => {
+    const app = setup(); const queued = [], committed = [], translated = [];
+    app.context.window.isSentenceCorrectionEnabled = () => true;
+    app.context.window.queueTranscriptCorrection = (text, commit) => queued.push({ text, commit });
+    app.context.appendSegment = (text, language) => { committed.push({ text, language }); return text; };
+    app.context.translateSegment = text => translated.push(text);
+    app.click(); app.instances[0].onstart();
+    app.instances[0].onresult(speechResult('a'.repeat(60), false));
+    assert.equal(queued.length, 0);
+    app.instances[0].onresult(speechResult('final sentence', true));
+    assert.equal(queued.length, 1);
+    assert.equal(committed.length, 0);
+    queued[0].commit('Corrected sentence.');
+    assert.deepEqual(committed, [{ text: 'Corrected sentence.', language: 'ko-KR' }]);
+    assert.deepEqual(translated, ['Corrected sentence.']);
+    app.instances[0].onresult(speechResult('final sentence', true));
+    assert.equal(queued.length, 1);
+});
+
+test('page stop waits for pending corrections after recognition ends', async () => {
+    const app = setup(); let finish;
+    const pending = new Promise(resolve => { finish = resolve; });
+    app.context.window.flushTranscriptCorrections = () => pending;
+    app.click(); app.instances[0].onstart();
+    let stopped = false;
+    const stop = app.context.window.stopPageRecognition().then(() => { stopped = true; });
+    app.instances[0].onend();
+    await Promise.resolve(); assert.equal(stopped, false);
+    finish(); await stop; assert.equal(stopped, true);
 });

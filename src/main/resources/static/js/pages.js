@@ -251,7 +251,7 @@ document.addEventListener("visibilitychange", () => {
     if (document.visibilityState === "hidden" && pagesReady) flushPageSave().catch(reportPageError);
 });
 window.addEventListener("beforeunload", event => {
-    if (pageChangeNumber !== pageSavedNumber) {
+    if (pageChangeNumber !== pageSavedNumber || window.hasPendingTranscriptCorrections?.()) {
         event.preventDefault();
         event.returnValue = "";
     }
