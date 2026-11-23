@@ -7,6 +7,7 @@ let pageSavePromise = null;
 let pageChangeNumber = 0;
 let pageSavedNumber = 0;
 let pageSaveConflict = false;
+let pageInitializationPending = false;
 const pageTitle = document.querySelector(".page-title");
 const newPageButton = document.querySelector(".new-page");
 const pageList = document.getElementById("page-list");
@@ -189,18 +190,40 @@ async function navigatePage(id = null) {
 }
 
 async function initializePages() {
+    if (pageInitializationPending) return;
+    pageInitializationPending = true;
+    const status = document.getElementById("page-load-status");
+    const message = document.getElementById("page-load-message");
+    const retry = document.getElementById("page-load-retry");
+    status.hidden = false;
+    message.dataset.i18n = "pageLoading";
+    message.textContent = t("pageLoading");
+    retry.hidden = true;
     lockPageEditor(true);
     setPageSavedState(false);
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 20000);
     try {
-        pageSummaries = await pageRequest();
+        pageSummaries = await pageRequest("", { signal: controller.signal });
         const page = pageSummaries.length
-            ? await pageRequest("/" + pageSummaries[0].id)
-            : await pageRequest("", { method: "POST" });
+            ? await pageRequest("/" + pageSummaries[0].id, { signal: controller.signal })
+            : await pageRequest("", { method: "POST", signal: controller.signal });
         if (!pageSummaries.length) pageSummaries.push({ id: page.id, title: page.title });
         displayPage(page);
         lockPageEditor(false);
-    } catch (error) { reportPageError(error); }
+        status.hidden = true;
+    } catch (error) {
+        reportPageError(error);
+        message.dataset.i18n = controller.signal.aborted ? "pageLoadTimeout" : "pageLoadError";
+        message.textContent = t(message.dataset.i18n);
+        retry.hidden = false;
+    } finally {
+        clearTimeout(timeout);
+        pageInitializationPending = false;
+    }
 }
+
+document.getElementById("page-load-retry").addEventListener("click", () => initializePages());
 
 async function deletePage(id) {
     if (!pagesReady || pageNavigationBusy) return;

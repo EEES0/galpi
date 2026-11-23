@@ -8,7 +8,7 @@ function setup() {
     const elements = new Map();
     const element = key => {
         if (!elements.has(key)) elements.set(key, {
-            value: '', textContent: '', hidden: false, children: [],
+            value: '', textContent: '', hidden: false, children: [], dataset: {},
             addEventListener() {}, setAttribute() {},
             querySelectorAll() { return this.children; },
             replaceChildren() { this.children = []; },
@@ -21,7 +21,7 @@ function setup() {
     let nextPageId = 1;
     let state = { segments: [], translations: [], explanations: [] };
     const context = vm.createContext({
-        console: { ...console, error() {} }, setTimeout, clearTimeout, TextEncoder,
+        console: { ...console, error() {} }, setTimeout, clearTimeout, TextEncoder, AbortController,
         document: { querySelector: element, getElementById: element,
             addEventListener() {}, createElement: () => element(Symbol()) },
         window: { addEventListener() {}, getSelection: () => ({ removeAllRanges() {} }) },
@@ -81,6 +81,35 @@ test('first visit creates a page; edits save before switching and reload restore
     assert.equal(app.element('.page-title').value, 'Lesson');
     await app.run('initializePages()');
     assert.equal(app.database.size, 2, 'return visit must not create another page');
+});
+
+test('initial load failure or timeout offers retry and a successful retry unlocks the editor', async () => {
+    for (const timeout of [false, true]) {
+        const app = setup();
+        const originalFetch = app.context.fetch;
+        if (timeout) {
+            app.context.setTimeout = callback => { queueMicrotask(callback); return 0; };
+            app.context.fetch = async (url, options) => {
+                assert.equal(options.signal.aborted, false);
+                return new Promise((resolve, reject) => {
+                    options.signal.addEventListener('abort', () => reject(new Error('aborted')), { once: true });
+                });
+            };
+        } else {
+            app.context.fetch = async () => { throw new Error('offline'); };
+        }
+        await app.run('initializePages()');
+        assert.equal(app.element('page-load-status').hidden, false);
+        assert.equal(app.element('page-load-retry').hidden, false);
+        assert.equal(app.element('page-load-message').dataset.i18n, timeout ? 'pageLoadTimeout' : 'pageLoadError');
+        assert.equal(app.element('main').inert, true);
+        app.context.fetch = originalFetch;
+        app.context.setTimeout = setTimeout;
+        await app.run('initializePages()');
+        assert.equal(app.element('page-load-status').hidden, true);
+        assert.equal(app.element('main').inert, false);
+        assert.equal(app.database.size, 1);
+    }
 });
 
 test('conflicting changes are preserved in editor and prevent navigation', async () => {

@@ -507,6 +507,22 @@ const interfaceLabels = {
 };
 for (const [language, labels] of Object.entries(interfaceLabels)) Object.assign(translations[language], labels);
 
+const pageLoadLabels = {
+    ko: ["기록을 불러오는 중입니다…", "불러오기가 지연되고 있습니다. 다시 시도해 주세요.", "기록을 불러오지 못했습니다. 연결을 확인하고 다시 시도해 주세요.", "다시 시도"],
+    en: ["Loading your notes…", "Loading is taking too long. Please try again.", "Could not load your notes. Check your connection and try again.", "Try again"],
+    ja: ["記録を読み込み中…", "読み込みに時間がかかっています。再試行してください。", "記録を読み込めませんでした。接続を確認して再試行してください。", "再試行"],
+    zh: ["正在加载记录…", "加载时间过长，请重试。", "无法加载记录，请检查网络连接后重试。", "重试"],
+    vi: ["Đang tải ghi chép…", "Tải quá lâu. Vui lòng thử lại.", "Không thể tải ghi chép. Kiểm tra kết nối và thử lại.", "Thử lại"],
+    es: ["Cargando tus notas…", "La carga está tardando demasiado. Inténtalo de nuevo.", "No se pudieron cargar tus notas. Comprueba la conexión e inténtalo de nuevo.", "Reintentar"],
+    fr: ["Chargement de vos notes…", "Le chargement prend trop de temps. Réessayez.", "Impossible de charger vos notes. Vérifiez votre connexion et réessayez.", "Réessayer"],
+    de: ["Notizen werden geladen…", "Das Laden dauert zu lange. Bitte erneut versuchen.", "Notizen konnten nicht geladen werden. Verbindung prüfen und erneut versuchen.", "Erneut versuchen"]
+};
+for (const [language, labels] of Object.entries(pageLoadLabels)) {
+    ["pageLoading", "pageLoadTimeout", "pageLoadError", "retryLoad"].forEach((key, index) => {
+        translations[language][key] = labels[index];
+    });
+}
+
 let recognitionStatus = "start";
 
 function t(key) {
