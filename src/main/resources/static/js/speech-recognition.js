@@ -76,6 +76,7 @@ if (!SpeechRecognition) {
         }
         resultProgress.clear();
         interimElement.textContent = "";
+        window.showTranscriptCorrectionWaiting?.(false);
     }
 
     function scheduleRestart() {
@@ -212,6 +213,7 @@ if (!SpeechRecognition) {
             if (index >= event.results.length) resultProgress.delete(index);
         }
         interimElement.textContent = interimText;
+        window.showTranscriptCorrectionWaiting?.(Boolean(interimText.trim()));
     };
 
     recognition.onerror = (event) => {

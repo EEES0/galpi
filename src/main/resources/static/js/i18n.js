@@ -414,6 +414,19 @@ const correctionLabels = {
 for (const [language, labels] of Object.entries(correctionLabels)) {
     Object.assign(translations[language], { sentenceCorrection: labels[0], sentenceCorrectionHelp: labels[1], correctingSentence: labels[2] });
 }
+const settingsLabels = {
+    ko: ["설정", "발언 확정 대기 중…"],
+    en: ["Settings", "Waiting for speech to finalize…"],
+    ja: ["設定", "発言の確定を待っています…"],
+    zh: ["设置", "正在等待发言确认…"],
+    vi: ["Cài đặt", "Đang chờ xác nhận lời nói…"],
+    es: ["Ajustes", "Esperando a que se confirme el dictado…"],
+    fr: ["Paramètres", "En attente de la finalisation de la dictée…"],
+    de: ["Einstellungen", "Warten auf den Abschluss der Spracherkennung…"]
+};
+for (const [language, labels] of Object.entries(settingsLabels)) {
+    Object.assign(translations[language], { settings: labels[0], awaitingSpeechFinal: labels[1] });
+}
 
 let recognitionStatus = "start";
 

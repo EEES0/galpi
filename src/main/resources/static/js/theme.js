@@ -5,15 +5,16 @@
  const system = window.matchMedia("(prefers-color-scheme: dark)");
  const apply = theme => {
   document.documentElement.dataset.theme = theme;
-  const select = document.getElementById("theme-select");
-  if (select) select.value = theme;
+  const toggle = document.getElementById("light-mode");
+  if (toggle) toggle.checked = theme === "light";
  };
  apply(["light", "dark"].includes(preference) ? preference : system.matches ? "dark" : "light");
  document.addEventListener("DOMContentLoaded", () => {
-  const select = document.getElementById("theme-select");
-  select.value = document.documentElement.dataset.theme;
-  select.addEventListener("change", () => {
-   preference = select.value;
+  const toggle = document.getElementById("light-mode");
+  if (!toggle) return;
+  toggle.checked = document.documentElement.dataset.theme === "light";
+  toggle.addEventListener("change", () => {
+   preference = toggle.checked ? "light" : "dark";
    apply(preference);
    try { localStorage.setItem(key, preference); } catch {}
   });

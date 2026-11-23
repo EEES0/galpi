@@ -101,3 +101,33 @@ test('page stop waits for pending corrections after recognition ends', async () 
     await Promise.resolve(); assert.equal(stopped, false);
     finish(); await stop; assert.equal(stopped, true);
 });
+
+test('recognition and correction scripts together send the correction API request on final speech', async () => {
+    const app = setup();
+    const nodes = new Map(), requests = [], committed = [];
+    app.context.document.getElementById = id => {
+        if (!nodes.has(id)) nodes.set(id, { addEventListener() {} });
+        return nodes.get(id);
+    };
+    Object.assign(app.context, {
+        localStorage: { getItem: () => null }, storageGeneration: 0, AbortController,
+        userLanguageSelect: { addEventListener() {} }, t: key => key,
+        fetch: async (url, options) => {
+            requests.push({ url, options });
+            return { ok: true, json: async () => ({ correctedSentence: 'He goes home.' }) };
+        },
+        appendSegment: text => { committed.push(text); return {}; }
+    });
+    app.context.finalElement.querySelectorAll = () => [];
+    vm.runInNewContext(fs.readFileSync(path.join(__dirname, '../../main/resources/static/js/correction.js'), 'utf8'), app.context);
+    app.click(); app.instances[0].onstart();
+    app.instances[0].onresult(speechResult('He go home.', false));
+    assert.equal(requests.length, 0);
+    assert.equal(nodes.get('correction-pending').textContent, 'awaitingSpeechFinal');
+    app.instances[0].onresult(speechResult('He go home.', true));
+    await app.context.window.flushTranscriptCorrections();
+    assert.equal(requests.length, 1);
+    assert.equal(requests[0].url, '/api/sentence/correct');
+    assert.deepEqual(JSON.parse(requests[0].options.body), { sentence: 'He go home.', context: '' });
+    assert.deepEqual(committed, ['He goes home.']);
+});

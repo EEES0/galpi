@@ -7,18 +7,25 @@ correctionToggle.checked = correctionEnabled;
 correctionToggle.addEventListener("change", () => {
     correctionEnabled = correctionToggle.checked;
     try { localStorage.setItem(correctionPreferenceKey, String(correctionEnabled)); } catch {}
+    if (!correctionEnabled) correctionWaiting = false;
+    showCorrectionPending();
 });
 let correctionQueue = Promise.resolve();
 let correctionEpoch = 0;
 let correctionCount = 0;
 let activeCorrection;
+let correctionWaiting = false;
 window.isSentenceCorrectionEnabled = () => correctionEnabled;
 window.flushTranscriptCorrections = () => correctionQueue;
 window.hasPendingTranscriptCorrections = () => correctionCount > 0;
 function showCorrectionPending() {
-    correctionPending.hidden = correctionCount === 0;
-    correctionPending.textContent = t("correctingSentence");
+    correctionPending.hidden = correctionCount === 0 && !correctionWaiting;
+    correctionPending.textContent = t(correctionCount > 0 ? "correctingSentence" : "awaitingSpeechFinal");
 }
+window.showTranscriptCorrectionWaiting = waiting => {
+    correctionWaiting = correctionEnabled && waiting;
+    showCorrectionPending();
+};
 window.queueTranscriptCorrection = (text, commit) => {
     const enabled = correctionEnabled;
     if (!enabled && correctionCount === 0) { commit(text); return; }
@@ -58,6 +65,7 @@ window.queueTranscriptCorrection = (text, commit) => {
 clearBtn.addEventListener("click", () => {
     correctionEpoch++;
     correctionCount = 0;
+    correctionWaiting = false;
     activeCorrection?.abort();
     correctionQueue = Promise.resolve();
     showCorrectionPending();

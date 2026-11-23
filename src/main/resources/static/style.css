@@ -352,7 +352,17 @@ button:disabled:hover { background: transparent; }
     .saved-page-row + .saved-page-row { margin-top: 0; }
 }
 
-.correction-setting { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--ink); }
-.correction-setting input { accent-color: var(--ink); width: 16px; height: 16px; }
-.correction-help { display: block; max-width: 230px; font-size: 12px; line-height: 1.5; opacity: .7; }
+.settings-menu > .language-settings { width: 292px; max-height: min(560px, 70dvh); overflow-y: auto; gap: 14px; }
+.settings-heading { margin: 0 0 2px; color: var(--secondary); font-size: 11px; font-weight: 600; }
+.settings-options { border-top: 1px solid var(--line); padding-top: 12px; display: grid; gap: 12px; }
+.setting-switch { position: relative; display: flex; align-items: center; justify-content: space-between; gap: 16px; min-height: 36px; cursor: pointer; }
+.setting-label { min-width: 0; color: var(--ink); font-size: 13px; line-height: 1.5; }
+.setting-switch input { position: absolute; right: 0; width: 40px; height: 24px; margin: 0; opacity: 0; cursor: pointer; }
+.switch-track { flex: 0 0 40px; height: 24px; border: 1px solid var(--muted); border-radius: 99px; background: var(--hover); pointer-events: none; transition: background .15s, border-color .15s; }
+.switch-track::after { content: ""; display: block; width: 18px; height: 18px; margin: 2px; border-radius: 50%; background: var(--secondary); transition: transform .15s, background .15s; }
+.setting-switch input:checked + .switch-track { background: #386b9d; border-color: #386b9d; }
+.setting-switch input:checked + .switch-track::after { transform: translateX(16px); background: #fff; }
+.setting-switch input:focus-visible + .switch-track { outline: 2px solid #9dbde2; outline-offset: 3px; }
+.correction-help { display: block; margin-top: 4px; color: var(--secondary); font-size: 12px; line-height: 1.6; }
 .correction-pending { font-size: 13px; opacity: .7; }
+@media (prefers-reduced-motion: reduce) { .switch-track, .switch-track::after { transition: none; } }

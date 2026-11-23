@@ -4,21 +4,21 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <title data-i18n="brand">갈피</title>
-        <script src="js/theme.js"></script>
-        <link rel="stylesheet" href="style.css">
-        <script src="js/state.js" defer></script>
-        <script src="js/i18n.js" defer></script>
-        <script src="js/transcript.js" defer></script>
-        <script src="js/selection-context.js" defer></script>
-        <script src="js/storage.js" defer></script>
-        <script src="js/explanations.js" defer></script>
-        <script src="js/pages.js" defer></script>
-        <script src="js/controls.js" defer></script>
-        <script src="js/correction.js" defer></script>
-        <script src="js/speech-recognition.js" defer></script>
-        <script src="js/selection.js" defer></script>
-        <script src="js/content-tabs.js" defer></script>
-        <script src="script.js" defer></script>
+        <script src="js/theme.js?v=20261123-settings2"></script>
+        <link rel="stylesheet" href="style.css?v=20261123-settings2">
+        <script src="js/state.js?v=20261123-settings2" defer></script>
+        <script src="js/i18n.js?v=20261123-settings2" defer></script>
+        <script src="js/transcript.js?v=20261123-settings2" defer></script>
+        <script src="js/selection-context.js?v=20261123-settings2" defer></script>
+        <script src="js/storage.js?v=20261123-settings2" defer></script>
+        <script src="js/explanations.js?v=20261123-settings2" defer></script>
+        <script src="js/pages.js?v=20261123-settings2" defer></script>
+        <script src="js/controls.js?v=20261123-settings2" defer></script>
+        <script src="js/correction.js?v=20261123-settings2" defer></script>
+        <script src="js/speech-recognition.js?v=20261123-settings2" defer></script>
+        <script src="js/selection.js?v=20261123-settings2" defer></script>
+        <script src="js/content-tabs.js?v=20261123-settings2" defer></script>
+        <script src="script.js?v=20261123-settings2" defer></script>
     </head>
     <body>
         <nav class="sidebar" aria-label="페이지 메뉴" data-i18n-aria="pageMenu">
@@ -51,14 +51,15 @@
                 <button id="clear" data-i18n="clear">초기화</button>
                 <button id="edit-transcript" data-i18n="editTranscript" type="button" aria-pressed="false">&#50896;&#47928; &#49688;&#51221;</button>
                 <details class="settings-menu">
-                    <summary class="settings-toggle" aria-label="언어 설정" data-i18n-aria="languageSettings" title="언어 설정" data-i18n-title="languageSettings">
+                    <summary class="settings-toggle" aria-label="설정" data-i18n-aria="settings" title="설정" data-i18n-title="settings">
                         <svg width="21" height="21" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true">
                             <path d="M4 10H16M23 10H28M4 23H9M16 23H28"/>
                             <circle cx="19.5" cy="10" r="3.5"/>
                             <circle cx="12.5" cy="23" r="3.5"/>
                         </svg>
                     </summary>
-                    <div class="language-settings" role="group" aria-label="언어 설정" data-i18n-aria="languageSettings">
+                    <div class="language-settings" role="group" aria-label="설정" data-i18n-aria="settings">
+                <p class="settings-heading" data-i18n="languageSettings">언어 설정</p>
                 <label class="language-field" for="inputLanguage">
                     <span data-i18n="inputLanguage">입력 언어</span>
                     <select id="inputLanguage">
@@ -84,12 +85,22 @@
                         <option value="fr-FR">Français</option>
                         <option value="de-DE">Deutsch</option>
                     </select>
-                </label><label class="language-field" for="theme-select"><span data-i18n="theme">테마</span><select id="theme-select"><option value="light" data-i18n="lightMode">라이트 모드</option><option value="dark" data-i18n="darkMode">다크 모드</option></select></label>
-                <label class="correction-setting" for="sentence-correction">
-                    <input id="sentence-correction" type="checkbox" checked>
-                    <span data-i18n="sentenceCorrection">발언 문맥 교정</span>
                 </label>
-                <small class="correction-help" data-i18n="sentenceCorrectionHelp">확정 전 AI로 교정합니다. 실패하면 원문을 저장합니다.</small>
+                <div class="settings-options">
+                    <label class="setting-switch" for="light-mode">
+                        <span class="setting-label" data-i18n="lightMode">라이트 모드</span>
+                        <input id="light-mode" type="checkbox" role="switch" checked>
+                        <span class="switch-track" aria-hidden="true"></span>
+                    </label>
+                    <div class="setting-option">
+                        <label class="setting-switch" for="sentence-correction">
+                            <span class="setting-label" data-i18n="sentenceCorrection">발언 문맥 교정</span>
+                            <input id="sentence-correction" type="checkbox" role="switch" aria-describedby="correction-help" checked>
+                            <span class="switch-track" aria-hidden="true"></span>
+                        </label>
+                        <small id="correction-help" class="correction-help" data-i18n="sentenceCorrectionHelp">확정 전 AI로 교정합니다. 실패하면 원문을 저장합니다.</small>
+                    </div>
+                </div>
             </div>
                 </details>
             </div>
