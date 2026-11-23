@@ -26,7 +26,7 @@ window.showTranscriptCorrectionWaiting = waiting => {
     correctionWaiting = correctionEnabled && waiting;
     showCorrectionPending();
 };
-window.queueTranscriptCorrection = (text, commit) => {
+window.queueTranscriptCorrection = (text, commit, paragraph) => {
     const enabled = correctionEnabled;
     if (!enabled && correctionCount === 0) { commit(text); return; }
     const epoch = correctionEpoch;
@@ -41,8 +41,9 @@ window.queueTranscriptCorrection = (text, commit) => {
             activeCorrection = controller;
             const timer = setTimeout(() => controller.abort(), 15000);
             try {
-                const context = Array.from(finalElement.querySelectorAll(".segment"), node => node.textContent)
-                    .slice(-6).join("\n").slice(-12000);
+                const segments = Array.from(finalElement.querySelectorAll(".segment"));
+                const preceding = paragraph ? segments.slice(0, segments.indexOf(paragraph)) : segments;
+                const context = preceding.map(node => node.textContent).slice(-6).join("\n").slice(-12000);
                 const response = await fetch("/api/sentence/correct", {
                     method: "POST", credentials: "same-origin", signal: controller.signal,
                     headers: { "Content-Type": "application/json" },

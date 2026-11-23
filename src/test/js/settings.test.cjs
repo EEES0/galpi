@@ -24,7 +24,7 @@ test('all eight languages translate every label used by the settings menu', () =
     assert.ok(!settings.includes('theme-select'));
 });
 
-test('light mode switch follows the system and persists explicit light/dark choices', () => {
+test('dark mode switch defaults to light and persists explicit choices', () => {
     const handlers = {}, systemHandlers = {}, saved = [];
     const toggle = { addEventListener(name, fn) { handlers[name] = fn; } };
     const document = { documentElement: { dataset: {} }, getElementById: () => toggle,
@@ -33,15 +33,12 @@ test('light mode switch follows the system and persists explicit light/dark choi
         window: { matchMedia: () => ({ matches: true, addEventListener(name, fn) { systemHandlers[name] = fn; } }) } };
     vm.runInNewContext(fs.readFileSync(path.join(root, 'js/theme.js'), 'utf8'), context);
     handlers.DOMContentLoaded();
-    assert.equal(document.documentElement.dataset.theme, 'dark');
+    assert.equal(document.documentElement.dataset.theme, 'light');
     assert.equal(toggle.checked, false);
-    systemHandlers.change({ matches: false });
+    toggle.checked = true; handlers.change();
+    assert.equal(document.documentElement.dataset.theme, 'dark');
     assert.equal(toggle.checked, true);
     toggle.checked = false; handlers.change();
-    assert.equal(document.documentElement.dataset.theme, 'dark');
-    systemHandlers.change({ matches: false });
-    assert.equal(document.documentElement.dataset.theme, 'dark');
-    toggle.checked = true; handlers.change();
     assert.equal(document.documentElement.dataset.theme, 'light');
     assert.deepEqual(saved, [['galpi-theme', 'dark'], ['galpi-theme', 'light']]);
 });

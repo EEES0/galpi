@@ -60,13 +60,16 @@ if (!SpeechRecognition) {
         if (!text.trim()) return;
         const language = recognition.lang;
         const timestamp = new Date().toISOString();
+        const paragraph = appendSegment(text.trim(), language, timestamp);
+        refreshSavedMarks();
+        persistExplanations();
         const commit = corrected => {
-            const paragraph = appendSegment(corrected, language, timestamp);
+            paragraph.textContent = corrected;
             translateSegment(paragraph);
             refreshSavedMarks();
             persistExplanations();
         };
-        if (window.queueTranscriptCorrection) window.queueTranscriptCorrection(text.trim(), commit);
+        if (window.queueTranscriptCorrection) window.queueTranscriptCorrection(text.trim(), commit, paragraph);
         else commit(text.trim());
     }
 

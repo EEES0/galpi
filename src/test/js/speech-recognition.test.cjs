@@ -75,16 +75,16 @@ test('enabled correction waits for final speech and commits corrected text befor
     const app = setup(); const queued = [], committed = [], translated = [];
     app.context.window.isSentenceCorrectionEnabled = () => true;
     app.context.window.queueTranscriptCorrection = (text, commit) => queued.push({ text, commit });
-    app.context.appendSegment = (text, language) => { committed.push({ text, language }); return text; };
-    app.context.translateSegment = text => translated.push(text);
+    app.context.appendSegment = (text, language) => { const paragraph = { textContent: text, language }; committed.push(paragraph); return paragraph; };
+    app.context.translateSegment = paragraph => translated.push(paragraph.textContent);
     app.click(); app.instances[0].onstart();
     app.instances[0].onresult(speechResult('a'.repeat(60), false));
     assert.equal(queued.length, 0);
     app.instances[0].onresult(speechResult('final sentence', true));
     assert.equal(queued.length, 1);
-    assert.equal(committed.length, 0);
+    assert.deepEqual(committed, [{ textContent: 'final sentence', language: 'ko-KR' }]);
     queued[0].commit('Corrected sentence.');
-    assert.deepEqual(committed, [{ text: 'Corrected sentence.', language: 'ko-KR' }]);
+    assert.deepEqual(committed, [{ textContent: 'Corrected sentence.', language: 'ko-KR' }]);
     assert.deepEqual(translated, ['Corrected sentence.']);
     app.instances[0].onresult(speechResult('final sentence', true));
     assert.equal(queued.length, 1);
@@ -116,7 +116,7 @@ test('recognition and correction scripts together send the correction API reques
             requests.push({ url, options });
             return { ok: true, json: async () => ({ correctedSentence: 'He goes home.' }) };
         },
-        appendSegment: text => { committed.push(text); return {}; }
+        appendSegment: text => { const paragraph = { textContent: text }; committed.push(paragraph); return paragraph; }
     });
     app.context.finalElement.querySelectorAll = () => [];
     vm.runInNewContext(fs.readFileSync(path.join(__dirname, '../../main/resources/static/js/correction.js'), 'utf8'), app.context);
@@ -129,5 +129,5 @@ test('recognition and correction scripts together send the correction API reques
     assert.equal(requests.length, 1);
     assert.equal(requests[0].url, '/api/sentence/correct');
     assert.deepEqual(JSON.parse(requests[0].options.body), { sentence: 'He go home.', context: '' });
-    assert.deepEqual(committed, ['He goes home.']);
+    assert.deepEqual(committed.map(node => node.textContent), ['He goes home.']);
 });
