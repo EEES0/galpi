@@ -7,6 +7,7 @@
 | 변수 | 값 |
 | --- | --- |
 | OPENAI_API_KEY | 실제 API 키, 필수 |
+| VISITOR_JWT_SECRET | 필수. 암호학적으로 무작위 생성한 32바이트 이상 키의 Base64 문자열 |
 | SPRING_DATASOURCE_URL | jdbc:postgresql://내부호스트:5432/DB이름?sslmode=require, 필수 |
 | SPRING_DATASOURCE_USERNAME | Render Postgres Username, 필수 |
 | SPRING_DATASOURCE_PASSWORD | Render Postgres Password, 필수 |
@@ -25,14 +26,37 @@ API 키와 DB 비밀번호는 실행 환경변수로만 주입합니다. .env �
 ## 로컬 실행
 
 compose.yaml은 로컬 PostgreSQL용입니다. Render에서는 사용하지 않습니다.
-.env.example을 .env로 복사하고 OPENAI_API_KEY와 POSTGRES_PASSWORD를 입력합니다.
+.env.example을 .env로 복사하고 OPENAI_API_KEY, POSTGRES_PASSWORD, VISITOR_JWT_SECRET을 입력합니다.
 
 docker compose up -d --build
 
 기본 접속 주소는 http://localhost:8080 입니다. 데이터는 postgres-data 볼륨에 보존됩니다.
 docker compose down -v는 DB 데이터까지 삭제합니다. 이전 MySQL 볼륨은 사용하거나 삭제하지 않습니다.
 
+## 방문자 인증 (JWT)
+
+`galpi_visitor` 쿠키에 UUID 대신 HS256으로 서명한 JWT를 저장합니다. 서버는 서명, 알고리즘,
+발급자(`galpi`), 대상(`galpi-visitor`), 발급/만료시간과 UUID 형식을 검증한 뒤 DB 사용자를 조회합니다.
+새 방문자에게는 사용자 UUID를 생성하고 365일 유효한 JWT를 발급합니다. 정상 JWT는 재사용하며
+요청마다 만료를 연장하지 않습니다. 쿠키는 HttpOnly, SameSite=Lax이며 HTTPS 요청에서는 Secure입니다.
+
+기존 UUID 쿠키, 변조/만료 토큰, 삭제된 사용자의 토큰은 새 방문자로 처리합니다.
+기존 UUID만으로 기존 페이지를 복구하는 호환 경로는 없습니다. DB의 기존 페이지를 삭제하지는 않습니다.
+
+키는 한 번 생성하여 실행 환경변수로 보관하고, 모든 인스턴스와 재시작에서 같은 값을 사용하세요.
+예를 들어 PowerShell에서 아래 명령으로 키를 생성해 비밀 환경변수에 저장할 수 있습니다.
+
+```powershell
+[Convert]::ToBase64String([Security.Cryptography.RandomNumberGenerator]::GetBytes(32))
+```
+
+키가 없거나 Base64가 아니거나 디코딩한 길이가 32바이트 미만이면 앱은 시작하지 않습니다.
+키를 교체하면 기존 JWT는 무효화되고 방문자는 새 사용자로 시작합니다.
+JWT 자체가 유출되면 만료 전까지 재사용할 수 있고, 개별 토큰 폐기 기능은 구현하지 않습니다.
+운영 환경에서는 HTTPS를 사용하고 외부에서 전달한 프록시 헤더가 신뢰 경계 없이 앱에 도달하지 않게 구성하세요.
+
 ## 공식 문서
+- https://connect2id.com/products/nimbus-jose-jwt/examples/jwt-with-hmac
 - https://render.com/docs/postgresql-creating-connecting
 - https://render.com/docs/docker
 - https://render.com/docs/web-services#port-binding

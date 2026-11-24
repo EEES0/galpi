@@ -1,6 +1,7 @@
 package com.galpi;
 
 import com.galpi.repository.UserRepository;
+import com.galpi.service.VisitorTokenService;
 import com.galpi.entity.Page;
 import jakarta.persistence.EntityManager;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -24,12 +25,14 @@ import static org.junit.jupiter.api.Assertions.*;
         "spring.datasource.url=jdbc:h2:mem:visitor-pages;MODE=PostgreSQL;DB_CLOSE_DELAY=-1",
         "spring.datasource.driver-class-name=org.h2.Driver",
         "spring.datasource.username=sa", "spring.datasource.password=",
-        "spring.jpa.hibernate.ddl-auto=create-drop", "openai.api-key=test", "openai.model=test"
+        "spring.jpa.hibernate.ddl-auto=create-drop", "openai.api-key=test", "openai.model=test",
+        "galpi.visitor.jwt-secret=dGVzdC1vbmx5LXNlY3JldC1rZXktMzItYnl0ZXMtbG9uZyE="
 })
 class VisitorPagesIntegrationTest {
     @Autowired Environment environment;
     @Autowired JsonMapper mapper;
     @Autowired UserRepository users;
+    @Autowired VisitorTokenService tokens;
     @Autowired EntityManager entityManager;
     @Autowired PlatformTransactionManager transactions;
     @MockitoBean SummaryGenerator summaryGenerator;
@@ -69,7 +72,7 @@ class VisitorPagesIntegrationTest {
         var first = request("GET", "", null, null);
         assertEquals(200, first.statusCode());
         String identity = cookie(first);
-        String uuid = identity.substring(identity.indexOf('=') + 1);
+        String uuid = tokens.verify(identity.substring(identity.indexOf('=') + 1)).orElseThrow().userId();
         assertTrue(users.findById(uuid).isPresent());
         assertEquals(0, mapper.readTree(first.body()).size());
 
@@ -109,6 +112,33 @@ class VisitorPagesIntegrationTest {
         assertEquals(404, request("DELETE", path, identity, null).statusCode());
         assertEquals(1, mapper.readTree(request("GET", "", identity, null).body()).size());
         assertTrue(users.findById(uuid).isPresent());
+    }
+
+    @Test
+    void rawUuidAndTamperedJwtCannotAccessAnotherVisitorsPages() throws Exception {
+        String owner = cookie(request("GET", "", null, null));
+        String ownerToken = owner.substring(owner.indexOf('=') + 1);
+        String ownerId = tokens.verify(ownerToken).orElseThrow().userId();
+        var page = mapper.readTree(request("POST", "", owner, null).body());
+        String path = "/" + page.path("id").asString();
+
+        String rawUuid = "galpi_visitor=" + ownerId;
+        assertEquals(0, mapper.readTree(request("GET", "", rawUuid, null).body()).size());
+        assertEquals(404, request("GET", path, rawUuid, null).statusCode());
+        assertEquals(404, request("DELETE", path, rawUuid, null).statusCode());
+
+        String stranger = cookie(request("GET", "", null, null));
+        String strangerToken = stranger.substring(stranger.indexOf('=') + 1);
+        String strangerId = tokens.verify(strangerToken).orElseThrow().userId();
+        String[] parts = strangerToken.split("\\.");
+        String payload = new String(java.util.Base64.getUrlDecoder().decode(parts[1]), java.nio.charset.StandardCharsets.UTF_8);
+        parts[1] = java.util.Base64.getUrlEncoder().withoutPadding().encodeToString(
+                payload.replace(strangerId, ownerId).getBytes(java.nio.charset.StandardCharsets.UTF_8));
+        String forged = "galpi_visitor=" + String.join(".", parts);
+        assertEquals(404, request("GET", path, forged, null).statusCode());
+        assertEquals(404, request("PUT", path, forged, "{}").statusCode());
+        assertEquals(404, request("DELETE", path, forged, null).statusCode());
+        assertEquals(200, request("GET", path, owner, null).statusCode());
     }
 
     @Test

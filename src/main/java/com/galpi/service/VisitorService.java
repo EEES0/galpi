@@ -10,11 +10,12 @@ public class VisitorService {
     private final UserRepository users;
     public VisitorService(UserRepository users) { this.users = users; }
     @Transactional
-    public String identify(String cookie) {
-        if (cookie != null) {
+    public String identify(String verifiedUserId) {
+        // Only a subject from a verified JWT may be supplied here, never a raw cookie.
+        if (verifiedUserId != null) {
             try {
-                String id = UUID.fromString(cookie).toString();
-                if (id.equals(cookie)) {
+                String id = UUID.fromString(verifiedUserId).toString();
+                if (id.equals(verifiedUserId)) {
                     var existing = users.findById(id);
                     if (existing.isPresent()) {
                         existing.get().updateLastSeenAt();
