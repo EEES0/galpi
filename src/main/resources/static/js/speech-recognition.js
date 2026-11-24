@@ -64,6 +64,7 @@ if (!SpeechRecognition) {
         refreshSavedMarks();
         persistExplanations();
         const commit = corrected => {
+            if (paragraph.dataset?.userEdited === "true" || paragraph.contentEditable === "plaintext-only") return;
             paragraph.textContent = corrected;
             translateSegment(paragraph);
             refreshSavedMarks();

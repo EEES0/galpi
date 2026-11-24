@@ -52,14 +52,37 @@
     mobile.addEventListener("change", () => setDrawer(false, false));
     setDrawer(false, false);
 
+    const latestButton = document.getElementById("latest-script");
+    function latestScriptNode() {
+        return interimElement.textContent.trim() ? interimElement : Array.from(finalElement.querySelectorAll(".segment")).at(-1);
+    }
+    function updateLatestButton() {
+        scrollFrame = null;
+        const latest = latestScriptNode();
+        const viewport = window.visualViewport;
+        const bottom = viewport ? viewport.offsetTop + viewport.height : window.innerHeight;
+        const lineHeight = latest ? parseFloat(getComputedStyle(latest).lineHeight) || 32 : 32;
+        latestButton.hidden = !latest || transcriptPanel.hidden || transcriptEditing
+            || latest.getBoundingClientRect().bottom - bottom < lineHeight * 2;
+    }
+    function scheduleLatestButton() {
+        if (scrollFrame) return;
+        scrollFrame = requestAnimationFrame(updateLatestButton);
+    }
+    latestButton.addEventListener("click", () => {
+        const latest = latestScriptNode();
+        if (!latest) return;
+        latest.scrollIntoView({ block: "end", behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
+    });
+    window.addEventListener("scroll", scheduleLatestButton, { passive: true });
+    window.addEventListener("resize", scheduleLatestButton);
+    window.visualViewport?.addEventListener("resize", scheduleLatestButton);
+    window.visualViewport?.addEventListener("scroll", scheduleLatestButton);
+    document.addEventListener("focusin", scheduleLatestButton);
+    document.addEventListener("focusout", scheduleLatestButton);
     const observer = new MutationObserver(() => {
         updateContentActions();
-        if (!document.body.classList.contains("listening") || transcriptPanel.hidden || transcriptEditing) return;
-        cancelAnimationFrame(scrollFrame);
-        scrollFrame = requestAnimationFrame(() => {
-            const latest = interimElement.textContent.trim() ? interimElement : finalElement.lastElementChild;
-            latest?.scrollIntoView({ block: "end", behavior: "auto" });
-        });
+        scheduleLatestButton();
     });
     for (const node of [finalElement, interimElement, summaryPanel]) {
         observer.observe(node, { childList: true, characterData: true, subtree: true,
@@ -67,4 +90,5 @@
     }
     observer.observe(transcriptPanel, { attributes: true, attributeFilter: ["hidden"] });
     updateContentActions();
+    scheduleLatestButton();
 })();

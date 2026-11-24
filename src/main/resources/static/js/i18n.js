@@ -523,6 +523,20 @@ for (const [language, labels] of Object.entries(pageLoadLabels)) {
     });
 }
 
+const scriptActionLabels = {
+    ko: ["최신 스크립트로", "클릭하여 수정 · 바깥을 누르면 완료"],
+    en: ["Latest transcript", "Click to edit · Click outside to finish"],
+    ja: ["最新の文字起こしへ", "クリックして編集 · 外側をクリックして完了"],
+    zh: ["查看最新转录", "点击编辑 · 点击外部完成"],
+    vi: ["Đến bản chép lời mới nhất", "Nhấn để sửa · Nhấn bên ngoài để hoàn tất"],
+    es: ["Ir a la transcripción más reciente", "Haz clic para editar · Haz clic fuera para terminar"],
+    fr: ["Dernière transcription", "Cliquez pour modifier · Cliquez ailleurs pour terminer"],
+    de: ["Zum neuesten Transkript", "Zum Bearbeiten klicken · Zum Abschließen außerhalb klicken"]
+};
+for (const [language, labels] of Object.entries(scriptActionLabels)) {
+    Object.assign(translations[language], { latestScript: labels[0], editBlockHint: labels[1] });
+}
+
 let recognitionStatus = "start";
 
 function t(key) {
@@ -551,8 +565,6 @@ function applyTranslations() {
     document.querySelectorAll("[data-i18n-title]").forEach(element => {
         element.setAttribute("title", t(element.dataset.i18nTitle));
     });
-    editTranscriptButton.dataset.i18n = transcriptEditing ? "finishEditing" : "editTranscript";
-    editTranscriptButton.textContent = t(editTranscriptButton.dataset.i18n);
     finalElement.querySelectorAll(".segment").forEach(configureTranscriptEditor);
     renderPageList();
     setRecognitionStatus(recognitionStatus);

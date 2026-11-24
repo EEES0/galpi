@@ -105,41 +105,77 @@ function appendSegment(text, inputLanguage, timestamp = null) {
 }
 
 
-const editTranscriptButton = document.getElementById("edit-transcript");
 let transcriptEditing = false;
+let activeTranscriptBlock = null;
 function configureTranscriptEditor(paragraph) {
-    paragraph.contentEditable = transcriptEditing ? "plaintext-only" : "false";
-    if (transcriptEditing) {
-        paragraph.setAttribute("role", "textbox");
-        paragraph.setAttribute("aria-label", t("editTranscript"));
-        paragraph.setAttribute("aria-multiline", "true");
-    } else {
-        paragraph.removeAttribute("role");
-        paragraph.removeAttribute("aria-label");
-        paragraph.removeAttribute("aria-multiline");
+    const editing = paragraph === activeTranscriptBlock;
+    paragraph.contentEditable = editing ? "plaintext-only" : "false";
+    paragraph.tabIndex = 0;
+    paragraph.setAttribute("role", editing ? "textbox" : "button");
+    paragraph.setAttribute("aria-label", t("editTranscript"));
+    paragraph.title = t("editBlockHint");
+    if (editing) paragraph.setAttribute("aria-multiline", "true");
+    else paragraph.removeAttribute("aria-multiline");
+}
+function setTranscriptEditing(editing, paragraph = null) {
+    const previous = activeTranscriptBlock;
+    activeTranscriptBlock = editing ? paragraph : null;
+    transcriptEditing = Boolean(activeTranscriptBlock);
+    if (previous && previous !== activeTranscriptBlock) {
+        previous.textContent = previous.textContent;
+        configureTranscriptEditor(previous);
+        if (finalElement.contains(previous)) {
+            refreshSavedMarks();
+            persistExplanations();
+            translateSegment(previous);
+        }
+    }
+    if (activeTranscriptBlock) {
+        configureTranscriptEditor(activeTranscriptBlock);
+        hideExplanation();
+        explanationRequest++;
+        activeTranscriptBlock.focus({ preventScroll: true });
     }
 }
-function setTranscriptEditing(editing) {
-    transcriptEditing = editing;
-    editTranscriptButton.setAttribute("aria-pressed", String(editing));
-    editTranscriptButton.dataset.i18n = editing ? "finishEditing" : "editTranscript";
-    editTranscriptButton.textContent = t(editTranscriptButton.dataset.i18n);
-    finalElement.querySelectorAll(".segment").forEach(configureTranscriptEditor);
-    if (editing) { hideExplanation(); explanationRequest++; }
-}
-editTranscriptButton.addEventListener("click", () => setTranscriptEditing(!transcriptEditing));
+finalElement.addEventListener("click", event => {
+    const paragraph = event.target.closest(".segment");
+    if (!paragraph || paragraph === activeTranscriptBlock) return;
+    // Keep drag-to-select explanations available outside an edit session.
+    if (window.getSelection()?.isCollapsed === false) return;
+    setTranscriptEditing(true, paragraph);
+    const caret = document.caretPositionFromPoint?.(event.clientX, event.clientY);
+    const range = caret ? document.createRange() : document.caretRangeFromPoint?.(event.clientX, event.clientY);
+    if (caret) { range.setStart(caret.offsetNode, caret.offset); range.collapse(true); }
+    if (range && paragraph.contains(range.startContainer)) {
+        const selection = window.getSelection();
+        selection.removeAllRanges();
+        selection.addRange(range);
+    }
+});
+finalElement.addEventListener("keydown", event => {
+    const paragraph = event.target.closest(".segment");
+    if (!paragraph || event.isComposing) return;
+    if (!transcriptEditing && ["Enter", " "].includes(event.key)) {
+        event.preventDefault();
+        setTranscriptEditing(true, paragraph);
+    } else if (paragraph === activeTranscriptBlock && event.key === "Escape") {
+        event.preventDefault();
+        setTranscriptEditing(false);
+        paragraph.focus({ preventScroll: true });
+    }
+});
+document.addEventListener("pointerdown", event => {
+    if (activeTranscriptBlock && !activeTranscriptBlock.contains(event.target)) setTranscriptEditing(false);
+}, true);
 finalElement.addEventListener("input", event => {
     const paragraph = event.target.closest(".segment");
-    if (!transcriptEditing || !paragraph) return;
+    if (!paragraph || paragraph !== activeTranscriptBlock) return;
+    paragraph.dataset.userEdited = "true";
     segmentTranslationElements.get(paragraph)?.remove();
     segmentTranslationElements.delete(paragraph);
     refreshSavedMarks();
     persistExplanations();
 });
 finalElement.addEventListener("focusout", event => {
-    const paragraph = event.target.closest(".segment");
-    if (!paragraph) return;
-    paragraph.textContent = paragraph.textContent;
-    refreshSavedMarks();
-    translateSegment(paragraph);
+    if (event.target === activeTranscriptBlock) setTranscriptEditing(false);
 });
