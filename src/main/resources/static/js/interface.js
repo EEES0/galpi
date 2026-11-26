@@ -10,6 +10,7 @@
         const hasFinal = Array.from(finalElement.querySelectorAll(".segment"))
             .some(node => node.textContent.trim());
         const hasContent = hasFinal || Boolean(interimElement.textContent.trim());
+        document.getElementById("transcript-placeholder").hidden = hasContent;
         summaryTab.disabled = !hasFinal;
         clearBtn.disabled = !hasContent;
         copyContentButton.disabled = !hasContent || !contentToCopy();

@@ -14,8 +14,8 @@ if (!SpeechRecognition) {
     let endStatusTimer;
     let stopTimer;
     let stopWaiters = [];
-    const INTERIM_COMMIT_LENGTH = 50;
     const resultProgress = new Map();
+    let sessionLanguage;
     let restartTimer;
     let retryDelay = 500;
     let restartAttempts = 0;
@@ -58,7 +58,7 @@ if (!SpeechRecognition) {
 
     function saveTranscript(text) {
         if (!text.trim()) return;
-        const language = recognition.lang;
+        const language = sessionLanguage;
         const timestamp = new Date().toISOString();
         const paragraph = appendSegment(text.trim(), language, timestamp);
         refreshSavedMarks();
@@ -76,7 +76,7 @@ if (!SpeechRecognition) {
 
     function flushInterim() {
         for (const progress of resultProgress.values()) {
-            if (!progress.final) saveTranscript(progress.text.slice(progress.committed));
+            if (!progress.final && !progress.discarded) saveTranscript(progress.text);
         }
         resultProgress.clear();
         interimElement.textContent = "";
@@ -116,6 +116,7 @@ if (!SpeechRecognition) {
         if (isRunning || isStarting || !shouldListen) return;
 
         recognition.lang = inputLanguageSelect.value;
+        sessionLanguage = recognition.lang;
         interimElement.lang = recognition.lang;
 
         try {
@@ -152,7 +153,7 @@ if (!SpeechRecognition) {
     });
 
     inputLanguageSelect.addEventListener("change", () => {
-        if (isRunning) {
+        if (isRunning || isStarting) {
             requestStop();
         } else if (shouldListen) {
             startRecognition();
@@ -161,7 +162,7 @@ if (!SpeechRecognition) {
 
     clearBtn.addEventListener("click", () => {
         // Discard already received hypotheses, including their later final updates.
-        for (const progress of resultProgress.values()) progress.committed = progress.text.length;
+        for (const progress of resultProgress.values()) progress.discarded = true;
         finalElement.textContent = "";
         interimElement.textContent = "";
         selectedElement.textContent = "";
@@ -191,25 +192,18 @@ if (!SpeechRecognition) {
             const result = event.results[i];
             let progress = resultProgress.get(i);
             if (!progress) {
-                progress = { text: "", committed: 0, final: false };
+                progress = { text: "", final: false, discarded: false };
                 resultProgress.set(i, progress);
             }
-            if (progress.final) continue;
+            if (progress.final || progress.discarded) continue;
             progress.text = result[0].transcript;
-            let remaining = progress.text.slice(progress.committed);
             if (result.isFinal) {
-                saveTranscript(remaining);
-                progress.committed = progress.text.length;
+                // The engine may rewrite any part of an interim hypothesis.
+                // Save the complete final result rather than slicing by an old offset.
+                saveTranscript(progress.text);
                 progress.final = true;
             } else {
-                // Freeze displayed prefixes locally; the API's isFinal is read-only.
-                while (!window.isSentenceCorrectionEnabled?.() && Array.from(remaining).length >= INTERIM_COMMIT_LENGTH) {
-                    const chunk = Array.from(remaining).slice(0, INTERIM_COMMIT_LENGTH).join("");
-                    saveTranscript(chunk);
-                    progress.committed += chunk.length;
-                    remaining = progress.text.slice(progress.committed);
-                }
-                interimText += remaining;
+                interimText += progress.text;
             }
         }
         // Interim hypotheses can be removed or replaced by the recognition service.

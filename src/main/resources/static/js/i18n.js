@@ -537,6 +537,30 @@ for (const [language, labels] of Object.entries(scriptActionLabels)) {
     Object.assign(translations[language], { latestScript: labels[0], editBlockHint: labels[1] });
 }
 
+const transcriptPlaceholderLabels = {
+    ko: "받아쓰기 시작을 눌러 사용을 시작해 보세요.",
+    en: "Press Start dictation to get started.",
+    ja: "音声入力の開始を押して、使い始めてみましょう。",
+    zh: "点击开始听写，即可开始使用。",
+    vi: "Nhấn bắt đầu nhập bằng giọng nói để sử dụng.",
+    es: "Pulsa Iniciar dictado para comenzar.",
+    fr: "Appuyez sur Démarrer la dictée pour commencer.",
+    de: "Klicken Sie auf Diktat starten, um loszulegen."
+};
+for (const [language, label] of Object.entries(transcriptPlaceholderLabels)) translations[language].transcriptPlaceholder = label;
+
+const speechDraftLabels = {
+    ko: "인식 중 · 내용이 바뀔 수 있습니다",
+    en: "Recognizing · Text may change",
+    ja: "認識中 · 内容は変更される場合があります",
+    zh: "正在识别 · 内容可能变化",
+    vi: "Đang nhận dạng · Nội dung có thể thay đổi",
+    es: "Reconociendo · El texto puede cambiar",
+    fr: "Reconnaissance en cours · Le texte peut changer",
+    de: "Erkennung läuft · Text kann sich ändern"
+};
+for (const [language, label] of Object.entries(speechDraftLabels)) translations[language].speechDraft = label;
+
 let recognitionStatus = "start";
 
 function t(key) {
