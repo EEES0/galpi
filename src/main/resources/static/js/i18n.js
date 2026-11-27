@@ -549,18 +549,6 @@ const transcriptPlaceholderLabels = {
 };
 for (const [language, label] of Object.entries(transcriptPlaceholderLabels)) translations[language].transcriptPlaceholder = label;
 
-const speechDraftLabels = {
-    ko: "인식 중 · 내용이 바뀔 수 있습니다",
-    en: "Recognizing · Text may change",
-    ja: "認識中 · 内容は変更される場合があります",
-    zh: "正在识别 · 内容可能变化",
-    vi: "Đang nhận dạng · Nội dung có thể thay đổi",
-    es: "Reconociendo · El texto puede cambiar",
-    fr: "Reconnaissance en cours · Le texte peut changer",
-    de: "Erkennung läuft · Text kann sich ändern"
-};
-for (const [language, label] of Object.entries(speechDraftLabels)) translations[language].speechDraft = label;
-
 let recognitionStatus = "start";
 
 function t(key) {

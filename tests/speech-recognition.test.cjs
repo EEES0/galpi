@@ -105,11 +105,11 @@ test('language change keeps pending speech in its original recognition language'
     assert.equal(app.saved[0].language, 'ko-KR');
 });
 
-test('recognition draft labels exist for all supported interface languages', () => {
+test('existing waiting and correction labels exist for all supported interface languages', () => {
     const i18n = readFileSync(path.join(__dirname, '../src/main/resources/static/js/i18n.js'), 'utf8');
     const context = vm.createContext({});
     vm.runInContext(i18n, context);
-    const labels = vm.runInContext('Object.values(translations).map(labels => labels.speechDraft)', context);
-    assert.equal(labels.length, 8);
+    const labels = vm.runInContext('Object.values(translations).flatMap(labels => [labels.awaitingSpeechFinal, labels.correctingSentence])', context);
+    assert.equal(labels.length, 16);
     assert.ok(labels.every(label => typeof label === 'string' && label.length > 0 && !label.includes('\uFFFD')));
 });

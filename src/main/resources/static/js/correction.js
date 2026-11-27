@@ -7,7 +7,6 @@ correctionToggle.checked = correctionEnabled;
 correctionToggle.addEventListener("change", () => {
     correctionEnabled = correctionToggle.checked;
     try { localStorage.setItem(correctionPreferenceKey, String(correctionEnabled)); } catch {}
-    if (!correctionEnabled) correctionWaiting = false;
     showCorrectionPending();
 });
 let correctionQueue = Promise.resolve();
@@ -23,7 +22,7 @@ function showCorrectionPending() {
     correctionPending.textContent = t(correctionCount > 0 ? "correctingSentence" : "awaitingSpeechFinal");
 }
 window.showTranscriptCorrectionWaiting = waiting => {
-    correctionWaiting = correctionEnabled && waiting;
+    correctionWaiting = waiting;
     showCorrectionPending();
 };
 window.queueTranscriptCorrection = (text, commit, paragraph) => {
