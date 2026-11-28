@@ -79,7 +79,7 @@ function renderPageList() {
         deleteButton.innerHTML = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18M9 6V4h6v2M5 6l1 14h12l1-14M10 10v6M14 10v6"/></svg>';
         deleteButton.addEventListener("click", () => deletePage(page.id));
         row.append(button);
-        row.append(deleteButton);
+        if (![welcomePageTitle, "갈피에 오신 것을 환영합니다!"].includes(page.title)) row.append(deleteButton);
         pageList.append(row);
     }
 }
@@ -259,6 +259,8 @@ document.getElementById("page-load-retry").addEventListener("click", () => initi
 
 async function deletePage(id) {
     if (!pagesReady || pageNavigationBusy) return;
+    const target = pageSummaries.find(page => page.id === id);
+    if (target && [welcomePageTitle, "갈피에 오신 것을 환영합니다!"].includes(target.title)) return;
     const deletingCurrent = id === currentPage?.id;
     let deleted = false;
     pageNavigationBusy = true;

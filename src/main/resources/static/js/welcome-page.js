@@ -2,7 +2,7 @@ const welcomePageTitle = "👋 갈피에 오신 것을 환영합니다!";
 
 function isWelcomePage(page) {
     return Boolean(page && [welcomePageTitle, "갈피에 오신 것을 환영합니다!"].includes(page.title)
-        && page.state?.segments?.some(segment => (segment.text || "").startsWith("아래 내용을 확인해주세요")));
+        && page.state?.segments?.some(segment => /^(아래 내용을 확인해주세요|사용 방법)(?:\n|$)/.test(segment.text || "")));
 }
 
 let disposeWelcomeMotion = () => {};
@@ -62,8 +62,8 @@ function displayWelcomePage(page) {
             continue;
         }
         list = null;
-        if (majorHeadings.has(line) || line === "아래 내용을 확인해주세요") {
-            createChapter(line);
+        if (majorHeadings.has(line) || line === "아래 내용을 확인해주세요" || line === "사용 방법") {
+            createChapter(line === "아래 내용을 확인해주세요" ? "사용 방법" : line);
             continue;
         }
         if (line === "갈피가 더 궁금하신 분들은 아래 내용을 읽어주세요") {
@@ -138,7 +138,7 @@ function animateWelcomePage(article) {
 
 function welcomePageState() {
     const paragraphs = [
-        "아래 내용을 확인해주세요",
+        "사용 방법",
         "1. 좌측 또는 상단 탭 메뉴의 새 페이지를 눌러 사용을 시작하세요",
         "2. 페이지의 제목을 입력하세요",
         "3. 설정 탭에서 입력 받을 언어와 사용자가 이해하기 편한 언어를 선택하세요",

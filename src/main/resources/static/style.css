@@ -535,7 +535,7 @@ main { margin-top: max(24px, calc(26.01svh - 45px)); }
 .welcome-chapter-content { min-width: 0; }
 .welcome-card { padding: 28px; margin: 0 0 36px; border: 1px solid var(--line); border-radius: 18px; background: var(--surface); }
 #welcome-page .welcome-card p:last-child { margin-bottom: 0; }
-.welcome-progress { position: fixed; z-index: 35; top: 0; left: var(--sidebar-width); right: 0; height: 2px; background: var(--ink); transform: scaleX(var(--welcome-progress, 0)); transform-origin: left; pointer-events: none; }
+.welcome-progress { position: fixed; z-index: 35; top: 0; left: var(--sidebar-width); right: 0; height: 5px; background: var(--ink); transform: scaleX(var(--welcome-progress, 0)); transform-origin: left; pointer-events: none; }
 .welcome-motion .welcome-reveal { opacity: .25; transform: translateY(32px); transition: opacity .8s ease, transform .8s cubic-bezier(.2,.7,.2,1); }
 .welcome-motion .welcome-reveal.is-visible { opacity: 1; transform: none; }
 .welcome-chapter:not(.is-current) > h2 { color: var(--secondary); }

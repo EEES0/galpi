@@ -70,12 +70,12 @@ test('existing pages are loaded without adding or overwriting a welcome page', a
     assert.ok(app.requests.every(request => request.method === 'GET'));
 });
 
-test('welcome can be deleted normally and is replaced with an empty page', async () => {
+test('welcome cannot be deleted from the frontend', async () => {
     const app = setup();
     await app.run('initializePages()');
     await app.run('deletePage(currentPage.id)');
-    assert.equal(app.requests.filter(request => request.method === 'DELETE').length, 1);
+    assert.equal(app.requests.filter(request => request.method === 'DELETE').length, 0);
     assert.equal(app.records.size, 1);
-    assert.equal([...app.records.values()][0].state, null);
+    assert.equal([...app.records.values()][0].title, '👋 갈피에 오신 것을 환영합니다!');
     assert.equal(app.requests.filter(request => request.method === 'PUT').length, 1);
 });
