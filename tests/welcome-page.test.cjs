@@ -55,10 +55,10 @@ test('empty visitor receives persisted welcome content in the existing state for
     const page = [...app.records.values()][0];
     assert.equal(page.title, '👋 갈피에 오신 것을 환영합니다!');
     assert.deepEqual(Object.keys(page.state).sort(), ['explanations', 'inputLanguage', 'segments', 'translations', 'userLanguage']);
-    assert.equal(page.state.segments[0].text.split('\n').filter(line => /^\d\./.test(line)).length, 9);
+    assert.equal(page.state.segments[0].text.split('\n').filter(line => /^\d+\./.test(line)).length, 10);
     assert.ok(page.state.segments.every(segment => Object.keys(segment).sort().join() === 'inputLanguage,text,timestamp'));
     assert.ok(!page.state.segments.some(segment => segment.text.includes('다른 인증 방식과의 차이는')));
-    assert.match(page.state.segments.at(-1).text, /보관·삭제 방식/);
+    assert.match(page.state.segments.at(-1).text, /기대 효과\n\n다문화 학생/);
     await app.run('initializePages()');
     assert.equal(app.requests.filter(request => request.method === 'POST').length, 1);
 });
