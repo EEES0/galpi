@@ -5,16 +5,26 @@ function isWelcomePage(page) {
         && page.state?.segments?.some(segment => (segment.text || "").startsWith("아래 내용을 확인해주세요")));
 }
 
+let disposeWelcomeMotion = () => {};
+
 function displayWelcomePage(page) {
+    disposeWelcomeMotion();
     const article = document.getElementById("welcome-page");
     const welcome = isWelcomePage(page);
     document.body.classList.toggle("welcome-view", welcome);
     article.hidden = !welcome;
     article.replaceChildren();
     if (!welcome) return;
+    const hero = document.createElement("header");
+    hero.className = "welcome-hero";
+    const bookmark = document.createElement("div");
+    bookmark.className = "welcome-bookmark";
+    bookmark.setAttribute("aria-hidden", "true");
+    hero.append(bookmark);
     const title = document.createElement("h1");
     title.textContent = page.title;
-    article.append(title);
+    hero.append(title);
+    article.append(hero);
     const majorHeadings = new Set(["개발 과정에서 겪은 문제 및 해결", "개선할 점"]);
     const minorHeadings = new Set([
         "문맥에 맞지 않는 용어 설명을 제공하는 문제", "로그인 없는 사용자 식별",
@@ -23,21 +33,107 @@ function displayWelcomePage(page) {
         "초기 데이터 조회에 따른 대기 시간", "주변 소음에 따른 음성 인식 정확도 저하"
     ]);
     let list = null;
+    let chapter;
+    let content;
+    let card;
+    let chapterNumber = 0;
+    function createChapter(label) {
+        chapter = document.createElement("section");
+        chapter.className = "welcome-chapter";
+        const heading = document.createElement("h2");
+        heading.id = "welcome-chapter-" + (++chapterNumber);
+        heading.dataset.number = String(chapterNumber).padStart(2, "0");
+        heading.textContent = label;
+        chapter.setAttribute("aria-labelledby", heading.id);
+        content = document.createElement("div");
+        content.className = "welcome-chapter-content";
+        chapter.append(heading, content);
+        article.append(chapter);
+        card = null;
+    }
     const text = page.state.segments.map(segment => typeof segment === "string" ? segment : segment.text).join("\n\n");
     for (const line of text.split(/\n+/).map(line => line.trim()).filter(Boolean)) {
         if (/^\d+\.\s/.test(line)) {
-            if (!list) { list = document.createElement("ol"); article.append(list); }
+            if (!list) { list = document.createElement("ol"); content.append(list); }
             const item = document.createElement("li");
             item.textContent = line.replace(/^\d+\.\s*/, "");
+            item.className = "welcome-step welcome-reveal";
             list.append(item);
             continue;
         }
         list = null;
-        const element = document.createElement(majorHeadings.has(line) ? "h2" : minorHeadings.has(line) ? "h3" : "p");
-        if (line === "갈피가 더 궁금하신 분들은 아래 내용을 읽어주세요") element.className = "welcome-more";
+        if (majorHeadings.has(line) || line === "아래 내용을 확인해주세요") {
+            createChapter(line);
+            continue;
+        }
+        if (line === "갈피가 더 궁금하신 분들은 아래 내용을 읽어주세요") {
+            const bridge = document.createElement("p");
+            bridge.className = "welcome-more welcome-reveal";
+            bridge.textContent = line;
+            article.append(bridge);
+            continue;
+        }
+        if (minorHeadings.has(line)) {
+            card = document.createElement("section");
+            card.className = "welcome-card welcome-reveal";
+            content.append(card);
+        }
+        const element = document.createElement(minorHeadings.has(line) ? "h3" : "p");
         element.textContent = line;
-        article.append(element);
+        (card || content || hero).append(element);
     }
+    const progress = document.createElement("div");
+    progress.className = "welcome-progress";
+    progress.setAttribute("aria-hidden", "true");
+    article.prepend(progress);
+    disposeWelcomeMotion = animateWelcomePage(article);
+}
+
+function animateWelcomePage(article) {
+    const preference = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const targets = article.querySelectorAll(".welcome-reveal");
+    const chapters = article.querySelectorAll(".welcome-chapter");
+    let observer;
+    let frame;
+    function update() {
+        frame = null;
+        const rect = article.getBoundingClientRect();
+        const height = window.innerHeight;
+        const amount = Math.max(0, Math.min(1, -rect.top / Math.max(1, rect.height - height)));
+        article.style.setProperty("--welcome-progress", amount);
+        for (const chapter of chapters) {
+            const bounds = chapter.getBoundingClientRect();
+            chapter.classList.toggle("is-current", bounds.top < height * .6 && bounds.bottom > height * .35);
+        }
+    }
+    function schedule() { if (frame == null) frame = requestAnimationFrame(update); }
+    function configure() {
+        observer?.disconnect();
+        article.classList.remove("welcome-motion");
+        if (!preference.matches && "IntersectionObserver" in window) {
+            observer = new IntersectionObserver(entries => {
+                for (const entry of entries) {
+                    if (!entry.isIntersecting) continue;
+                    entry.target.classList.add("is-visible");
+                    observer.unobserve(entry.target);
+                }
+            }, { threshold: 0, rootMargin: "0px 0px -32px 0px" });
+            article.classList.add("welcome-motion");
+            for (const target of targets) observer.observe(target);
+        }
+        schedule();
+    }
+    window.addEventListener("scroll", schedule, { passive: true });
+    window.addEventListener("resize", schedule, { passive: true });
+    preference.addEventListener("change", configure);
+    configure();
+    return () => {
+        observer?.disconnect();
+        if (frame != null) cancelAnimationFrame(frame);
+        window.removeEventListener("scroll", schedule);
+        window.removeEventListener("resize", schedule);
+        preference.removeEventListener("change", configure);
+    };
 }
 
 function welcomePageState() {

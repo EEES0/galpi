@@ -517,19 +517,47 @@ main { margin-top: max(24px, calc(26.01svh - 45px)); }
 #transcript-placeholder { margin: 0; padding-left: 18px; color: var(--muted); pointer-events: none; user-select: none; }
 .welcome-view main > :is(.page-header, .toolbar, .content-tabs, #transcript, #page-summary),
 .welcome-view #latest-script { display: none; }
-#welcome-page { color: var(--ink); font-size: 16px; line-height: 1.95; overflow-wrap: anywhere; }
+#welcome-page { position: relative; color: var(--ink); font-size: 16px; line-height: 1.95; overflow-wrap: anywhere; }
 #welcome-page[hidden] { display: none; }
-#welcome-page h1 { margin: 0 0 28px; font-size: clamp(25px, 4.5vw, 35px); line-height: 1.45; letter-spacing: -.8px; font-weight: 650; text-wrap: balance; }
-#welcome-page h2 { margin: 52px 0 24px; padding-top: 28px; border-top: 1px solid var(--line); font-size: 23px; line-height: 1.5; letter-spacing: -.5px; }
-#welcome-page h3 { margin: 32px 0 12px; font-size: 18px; line-height: 1.65; font-weight: 600; letter-spacing: -.3px; }
+#welcome-page h1 { max-width: 620px; margin: 30px 0 0; font-size: clamp(32px, 4.6vw, 52px); line-height: 1.45; letter-spacing: -1.5px; font-weight: 650; text-wrap: balance; }
+#welcome-page h2 { position: sticky; top: 48px; align-self: start; margin: 0; padding: 0; border: 0; font-size: 22px; line-height: 1.6; letter-spacing: -.5px; transition: color .5s; }
+#welcome-page h2::before { content: attr(data-number); display: block; margin-bottom: 16px; color: var(--muted); font-size: 13px; letter-spacing: 2px; font-weight: 500; }
+#welcome-page h3 { margin: 0 0 20px; font-size: 20px; line-height: 1.65; font-weight: 600; letter-spacing: -.4px; text-wrap: pretty; }
 #welcome-page p { margin: 0 0 18px; }
-#welcome-page ol { margin: 18px 0 36px; padding-left: 26px; }
-#welcome-page li { padding-left: 7px; margin-bottom: 12px; }
+#welcome-page ol { margin: 0; padding-left: 24px; }
+#welcome-page li { padding: 22px 8px 26px 14px; margin-bottom: 16px; border-bottom: 1px solid var(--line); }
 #welcome-page li::marker { color: var(--secondary); font-weight: 500; }
-#welcome-page .welcome-more { margin: 40px 0 0; color: var(--secondary); font-size: 15px; }
+#welcome-page .welcome-more { margin: 100px 0; padding: 32px 0; color: var(--secondary); font-size: clamp(20px, 3vw, 27px); line-height: 1.7; text-wrap: balance; }
+.welcome-hero { min-height: min(65svh, 570px); display: flex; flex-direction: column; justify-content: center; padding-bottom: 60px; }
+.welcome-bookmark { width: 40px; height: 58px; background: var(--ink); opacity: .8; clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 75%, 0 100%); transform: rotate(-8deg); }
+.welcome-chapter { display: grid; grid-template-columns: minmax(130px, .8fr) minmax(0, 2fr); gap: 40px; padding: 52px 0 32px; border-top: 1px solid var(--line); }
+.welcome-chapter + .welcome-chapter { margin-top: 90px; }
+.welcome-chapter-content { min-width: 0; }
+.welcome-card { padding: 28px; margin: 0 0 36px; border: 1px solid var(--line); border-radius: 18px; background: var(--surface); }
+#welcome-page .welcome-card p:last-child { margin-bottom: 0; }
+.welcome-progress { position: fixed; z-index: 35; top: 0; left: var(--sidebar-width); right: 0; height: 2px; background: var(--ink); transform: scaleX(var(--welcome-progress, 0)); transform-origin: left; pointer-events: none; }
+.welcome-motion .welcome-reveal { opacity: .25; transform: translateY(32px); transition: opacity .8s ease, transform .8s cubic-bezier(.2,.7,.2,1); }
+.welcome-motion .welcome-reveal.is-visible { opacity: 1; transform: none; }
+.welcome-chapter:not(.is-current) > h2 { color: var(--secondary); }
 @media (max-width: 640px) {
     #welcome-page { font-size: 15.5px; line-height: 1.9; }
-    #welcome-page h2 { margin-top: 40px; font-size: 21px; }
+    #welcome-page h2 { position: static; margin: 0 0 26px; font-size: 23px; }
+    #welcome-page h1 { letter-spacing: -.8px; }
+    .welcome-hero { min-height: 55svh; padding-bottom: 36px; }
+    .welcome-chapter { display: block; padding-top: 32px; }
+    .welcome-card { padding: 22px 20px; border-radius: 14px; margin-bottom: 24px; }
+    #welcome-page .welcome-more { margin: 64px 0; }
+    .welcome-progress { left: 0; }
+}
+@media (prefers-reduced-motion: reduce), print {
+    .welcome-motion .welcome-reveal { opacity: 1; transform: none; transition: none; }
+    #welcome-page h2 { transition: none; }
+    .welcome-progress { display: none; }
+}
+@media print {
+    #welcome-page h2 { position: static; }
+    .welcome-hero { min-height: 0; }
+    .welcome-card { break-inside: avoid; }
 }
 #interim:not(:empty) {
     margin-top: 16px;
