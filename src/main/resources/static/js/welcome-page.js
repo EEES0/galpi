@@ -1,4 +1,4 @@
-const welcomePageTitle = "갈피에 오신 것을 환영합니다!";
+const welcomePageTitle = "👋 갈피에 오신 것을 환영합니다!";
 
 function welcomePageState() {
     const paragraphs = [
@@ -47,6 +47,11 @@ function welcomePageState() {
         userLanguage: preferredUserLanguage || "ko-KR",
         translations: [],
         explanations: [],
-        segments: paragraphs.map(text => ({ text, inputLanguage: "ko-KR", timestamp: null }))
+        // Preserve the supplied blank lines, with single line breaks within the numbered list.
+        segments: [{
+            text: [paragraphs[0], paragraphs.slice(1, 10).join("\n"), ...paragraphs.slice(10)].join("\n\n"),
+            inputLanguage: "ko-KR",
+            timestamp: null
+        }]
     };
 }

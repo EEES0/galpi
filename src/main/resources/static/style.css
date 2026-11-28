@@ -182,7 +182,7 @@ main {
 #page-summary[aria-busy="true"] { color: var(--muted); }
 #page-summary::selection, #page-summary ::selection { background: var(--selection-color); color: var(--selection-ink); }
 #transcript { min-height: 350px; font-size: 18.7px; line-height: 1.9; letter-spacing: -.2px; overflow-wrap: anywhere; }
-.segment { position: relative; margin: 0 0 22px; padding: 0 0 0 17px; border-left: 2px solid var(--active); }
+.segment { position: relative; margin: 0 0 22px; padding: 0 0 0 17px; border-left: 2px solid var(--active); white-space: pre-wrap; }
 .segment[data-time-label] { padding-top: 31px; }
 .segment[data-time-label]::before {
     content: attr(data-time-label);
