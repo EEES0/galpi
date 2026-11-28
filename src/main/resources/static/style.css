@@ -515,6 +515,22 @@ main { margin-top: max(24px, calc(26.01svh - 45px)); }
 .segment[contenteditable="plaintext-only"]:focus { outline-offset: 4px; }
 #interim { scroll-margin-bottom: 80px; }
 #transcript-placeholder { margin: 0; padding-left: 18px; color: var(--muted); pointer-events: none; user-select: none; }
+.welcome-view main > :is(.page-header, .toolbar, .content-tabs, #transcript, #page-summary),
+.welcome-view #latest-script { display: none; }
+#welcome-page { color: var(--ink); font-size: 16px; line-height: 1.95; overflow-wrap: anywhere; }
+#welcome-page[hidden] { display: none; }
+#welcome-page h1 { margin: 0 0 28px; font-size: clamp(25px, 4.5vw, 35px); line-height: 1.45; letter-spacing: -.8px; font-weight: 650; text-wrap: balance; }
+#welcome-page h2 { margin: 52px 0 24px; padding-top: 28px; border-top: 1px solid var(--line); font-size: 23px; line-height: 1.5; letter-spacing: -.5px; }
+#welcome-page h3 { margin: 32px 0 12px; font-size: 18px; line-height: 1.65; font-weight: 600; letter-spacing: -.3px; }
+#welcome-page p { margin: 0 0 18px; }
+#welcome-page ol { margin: 18px 0 36px; padding-left: 26px; }
+#welcome-page li { padding-left: 7px; margin-bottom: 12px; }
+#welcome-page li::marker { color: var(--secondary); font-weight: 500; }
+#welcome-page .welcome-more { margin: 40px 0 0; color: var(--secondary); font-size: 15px; }
+@media (max-width: 640px) {
+    #welcome-page { font-size: 15.5px; line-height: 1.9; }
+    #welcome-page h2 { margin-top: 40px; font-size: 21px; }
+}
 #interim:not(:empty) {
     margin-top: 16px;
     padding: 12px 16px;

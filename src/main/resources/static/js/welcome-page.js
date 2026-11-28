@@ -1,5 +1,45 @@
 const welcomePageTitle = "👋 갈피에 오신 것을 환영합니다!";
 
+function isWelcomePage(page) {
+    return Boolean(page && [welcomePageTitle, "갈피에 오신 것을 환영합니다!"].includes(page.title)
+        && page.state?.segments?.some(segment => (segment.text || "").startsWith("아래 내용을 확인해주세요")));
+}
+
+function displayWelcomePage(page) {
+    const article = document.getElementById("welcome-page");
+    const welcome = isWelcomePage(page);
+    document.body.classList.toggle("welcome-view", welcome);
+    article.hidden = !welcome;
+    article.replaceChildren();
+    if (!welcome) return;
+    const title = document.createElement("h1");
+    title.textContent = page.title;
+    article.append(title);
+    const majorHeadings = new Set(["개발 과정에서 겪은 문제 및 해결", "개선할 점"]);
+    const minorHeadings = new Set([
+        "문맥에 맞지 않는 용어 설명을 제공하는 문제", "로그인 없는 사용자 식별",
+        "반복적인 API 호출로 인한 비용 증가", "원문 수정 이후 기존 요약과의 불일치",
+        "외부 AI API 사용에 따른 운영 비용", "브라우저에 종속된 사용자 식별",
+        "초기 데이터 조회에 따른 대기 시간", "주변 소음에 따른 음성 인식 정확도 저하"
+    ]);
+    let list = null;
+    const text = page.state.segments.map(segment => typeof segment === "string" ? segment : segment.text).join("\n\n");
+    for (const line of text.split(/\n+/).map(line => line.trim()).filter(Boolean)) {
+        if (/^\d+\.\s/.test(line)) {
+            if (!list) { list = document.createElement("ol"); article.append(list); }
+            const item = document.createElement("li");
+            item.textContent = line.replace(/^\d+\.\s*/, "");
+            list.append(item);
+            continue;
+        }
+        list = null;
+        const element = document.createElement(majorHeadings.has(line) ? "h2" : minorHeadings.has(line) ? "h3" : "p");
+        if (line === "갈피가 더 궁금하신 분들은 아래 내용을 읽어주세요") element.className = "welcome-more";
+        element.textContent = line;
+        article.append(element);
+    }
+}
+
 function welcomePageState() {
     const paragraphs = [
         "아래 내용을 확인해주세요",

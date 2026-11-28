@@ -119,9 +119,11 @@ function displayPage(page) {
     currentPage = page;
     window.resetPageSummary?.();
     pageTitle.value = page.title;
+    pageTitle.readOnly = isWelcomePage(page);
+    displayWelcomePage(page);
     inputLanguageSelect.value = "ko-KR";
     userLanguageSelect.value = "ko-KR";
-    restoreExplanations(page.state);
+    if (!isWelcomePage(page)) restoreExplanations(page.state);
     // The interface language follows the user's preference, not each page's snapshot.
     if (preferredUserLanguage) userLanguageSelect.value = preferredUserLanguage;
     preferredUserLanguage = userLanguageSelect.value;
@@ -130,13 +132,13 @@ function displayPage(page) {
     pagesReady = true;
     applyTranslations();
     refreshSavedMarks();
-    translateCompletedSegments();
+    if (!isWelcomePage(page)) translateCompletedSegments();
     renderPageList();
     setPageSavedState(pageChangeNumber === pageSavedNumber);
 }
 
 function schedulePageSave() {
-    if (!pagesReady || !currentPage || pageSaveConflict) return;
+    if (!pagesReady || !currentPage || isWelcomePage(currentPage) || pageSaveConflict) return;
     pageChangeNumber++;
     setPageSavedState(false);
     clearTimeout(pageSaveTimer);
