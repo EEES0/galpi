@@ -8,6 +8,7 @@ let pageChangeNumber = 0;
 let pageSavedNumber = 0;
 let pageSaveConflict = false;
 let pageInitializationPending = false;
+let pendingWelcomePage = null;
 const pageTitle = document.querySelector(".page-title");
 const newPageButton = document.querySelector(".new-page");
 const pageList = document.getElementById("page-list");
@@ -205,7 +206,7 @@ async function navigatePage(id = null) {
     }
 }
 
-async function initializePages() {
+async function initializePages({ createWelcome = true } = {}) {
     if (pageInitializationPending) return;
     pageInitializationPending = true;
     const status = document.getElementById("page-load-status");
@@ -222,10 +223,21 @@ async function initializePages() {
     const timeout = setTimeout(() => controller.abort(), 20000);
     try {
         pageSummaries = await pageRequest("", { signal: controller.signal });
-        const page = pageSummaries.length
+        let page = pendingWelcomePage || (pageSummaries.length
             ? await pageRequest("/" + pageSummaries[0].id, { signal: controller.signal })
-            : await pageRequest("", { method: "POST", signal: controller.signal });
-        if (!pageSummaries.length) pageSummaries.push({ id: page.id, title: page.title });
+            : await pageRequest("", { method: "POST", signal: controller.signal }));
+        if (pendingWelcomePage || (!pageSummaries.length && createWelcome)) {
+            // Keep the created page for retries if saving the welcome content fails.
+            pendingWelcomePage = page;
+            page = await pageRequest("/" + page.id, {
+                method: "PUT", signal: controller.signal,
+                body: JSON.stringify({ title: welcomePageTitle, state: welcomePageState(), version: page.version })
+            });
+            pendingWelcomePage = null;
+        }
+        const summary = pageSummaries.find(summary => summary.id === page.id);
+        if (summary) summary.title = page.title;
+        else pageSummaries.push({ id: page.id, title: page.title });
         displayPage(page);
         lockPageEditor(false);
         status.hidden = true;
@@ -273,7 +285,8 @@ async function deletePage(id) {
             pageChangeNumber = pageSavedNumber = 0;
             setPageSavedState(false);
             // Re-read the list so pages removed in another tab are excluded as well.
-            await initializePages();
+            // Deleting the last page must not immediately recreate the welcome page.
+            await initializePages({ createWelcome: false });
         } else {
             renderPageList();
         }
